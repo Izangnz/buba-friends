@@ -1,6 +1,6 @@
 # Buba Friends · candidata para el viernes 30 de octubre de 2026
 
-Demo local para adultos, con 30 personajes ficticios, ilustraciones originales, coincidencias programadas y mensajes locales. Sin cuentas reales, respuestas automáticas, servidor de producto, pagos, Spotify ni publicación realizada.
+Demo local para adultos, con 30 personajes ficticios, ilustraciones originales, coincidencias programadas y mensajes locales. Sin cuentas reales, respuestas automáticas, servidor de producto, pagos ni Spotify. Web publicada: **https://izangnz.github.io/buba-friends/**.
 
 ## Vista previa
 
@@ -43,9 +43,9 @@ Todas las rutas de ejecución son relativas. El manifest tiene nombre Buba Frien
 
 ## Publicación autorizada y actualizaciones
 
-El usuario ha autorizado el repositorio público independiente `Izangnz/buba-friends`, con Pages desde la rama correspondiente y `/docs`, conservando el historial. Ha indicado usar la cuenta conectada en VS Code. No se ha creado ningún repositorio remoto, commit de este bloque, push ni despliegue.
+Repositorio público independiente: https://github.com/Izangnz/buba-friends. Pages publica desde `main` y `/docs`; el historial anterior se conserva. La cuenta se verificó mediante GitHub CLI, de forma independiente de VS Code.
 
-Cuenta autenticada y verificada mediante GitHub CLI oficial: **Izangnz**. El usuario ha elegido explícitamente el nombre de la cuenta y su correo noreply para los commits, configurados solo en este repositorio. El repositorio público independiente ya está creado y no contenía archivos anteriores. La publicación de Pages se está preparando; el resultado debe verificarse antes de anunciarlo.
+Cuenta autenticada y verificada mediante GitHub CLI oficial: **Izangnz**. El usuario ha elegido explícitamente el nombre de la cuenta y su correo noreply para los commits, configurados solo en este repositorio. El repositorio se creó tras comprobar que no existía bajo la sesión autenticada. El primer despliegue terminó con éxito, Pages indica `built` y HTTPS está activo. La entrada pública respondió HTTP 200 y los 76 archivos de ejecución coinciden byte a byte con `docs/`. El marcador `.nojekyll` completa los 77 archivos del paquete local.
 
 Antes de cada publicación, revisar los archivos fuente/publicables y el índice de Git antes de cualquier commit: ya contiene cambios de bloques anteriores. Añadir archivos revisados de forma explícita, sin `git add .`. `backups/` está excluido por `.gitignore`; no usar `git add -f` con copias o datos privados. No subir historias propias, almacenamiento del navegador, secretos ni materiales de generación innecesarios.
 
@@ -110,7 +110,7 @@ Comprobados: fuente y `docs/` idénticos en los archivos de ejecución; 77 archi
 
 Limitación: el acceso a navegadores continúa indisponible y un intento de acceso a Safari agotó el tiempo de espera. Pendiente la revisión visual real de la bienvenida a 375 px, 390 × 844 y escritorio, y en iPhone. No se insistió con más intentos.
 
-Recuperación de este acabado: `backups/antes-portada-bienvenida-20261028.zip` y `backups/despues-portada-bienvenida-20261028.zip`. Son copias locales, no commits; sin ZIP previos, cachés, secretos o almacenamiento del navegador. La identidad de Git sigue sin configurar. No se ha publicado nada.
+Recuperación de este acabado: `backups/antes-portada-bienvenida-20261028.zip` y `backups/despues-portada-bienvenida-20261028.zip`. Son copias locales, no commits; sin ZIP previos, cachés, secretos o almacenamiento del navegador. En ese bloque la identidad de Git todavía estaba sin configurar y no se había publicado; la publicación posterior está documentada en esta guía.
 
 
 ## Historias locales · bloque autorizado para publicar
@@ -131,6 +131,17 @@ Pruebas: batería del recorrido principal y referencias del guardado anterior; h
 
 Pendiente: prueba visual real de Historias a 375/390 px y escritorio, selector de archivos/decodificación, cuota y persistencia de IndexedDB en iPhone, teclado del visor, foco, desplazamiento y accesibilidad. El host de navegador no está disponible y el control de VS Code indica que faltan permisos; no se afirma revisión en dispositivo.
 
-Publicación autorizada por el usuario en el repositorio público independiente **Izangnz/buba-friends**, desde la rama correspondiente y `/docs`. El usuario indica usar la cuenta conectada en VS Code. Todavía no se ha podido verificar esa sesión desde las herramientas: Git carece de identidad y credencial accesible; el flujo oficial por navegador de GitHub CLI está iniciado y pendiente de autorización. No se ha inventado identidad, creado repositorio remoto ni hecho push. No se ha tocado mi-progreso-diario. No se considera una URL prevista como despliegue confirmado. Los datos locales de 4175 no se transferirán automáticamente al dominio publicado.
+Publicación completada en **https://izangnz.github.io/buba-friends/** y verificada por HTTP tras el despliegue correcto de GitHub Pages. Cuenta Izangnz verificada, identidad noreply elegida expresamente y configuración de Git limitada a este proyecto. No se ha tocado mi-progreso-diario. Los datos locales de 4175 no se transfieren automáticamente al dominio publicado.
+
 
 Recuperación: `backups/antes-historias-publicacion-20261028.zip` y `backups/despues-historias-publicacion-20261028.zip`, copias locales de archivos revisados, no commits; sin otras copias, `.git`, almacenamiento del navegador, historias privadas, secretos ni cachés.
+
+
+## Recuperación y verificación de publicación
+
+- `f1eccea`: commit de recuperación de la candidata antes del primer push; conserva como antecesor el commit inicial `1f21cd7`.
+- Commit posterior de documentación: registra la publicación confirmada y deja el resultado en el historial, sin modificar recursos de ejecución.
+- Copias locales: `backups/antes-publicacion-github-20261028.zip` y `backups/despues-publicacion-github-20261028.zip`. No contienen otras copias, `.git`, credenciales, datos del navegador ni historias subidas. Son copias de archivos, distintas de los commits.
+- Despliegue inicial verificado: https://github.com/Izangnz/buba-friends/actions/runs/40783351650.
+
+Las pruebas de lógica y reloj y la verificación pública de recursos no equivalen a una revisión visual del navegador. Se mantiene la lista pendiente de iPhone anterior.
