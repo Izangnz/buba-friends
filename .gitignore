@@ -1,0 +1,17 @@
+.DS_Store
+.env
+.env.*
+*.pem
+*.key
+node_modules/
+backups/
+
+# Local working materials; not needed by the application or public repository.
+__pycache__/
+*.pyc
+codificacion/assets/*-original.png
+codificacion/assets/martina-v2.png
+codificacion/assets/gabriel-v1.png
+codificacion/assets/catalogo-contacto.jpg
+codificacion/assets/generation-prompts.json
+codificacion/assets/welcome-generation.json
