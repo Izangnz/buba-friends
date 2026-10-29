@@ -22,7 +22,19 @@ function createRepository(indexedDB){
   });
   return opening;
  }
- return {async transact(transform){
+ // Profile photo lives under a separate meta key; story transactions only touch "seeded".
+ async function photoOperation(mode,blob){
+  if(mode==='put'&&(!(blob instanceof Blob)||blob.type!=='image/jpeg'||!blob.size||blob.size>MAX_FILE))throw error('La foto preparada no es válida.');
+  const db=await open();
+  return new Promise((resolve,reject)=>{
+   let result=null;const tx=db.transaction(['meta'],mode==='get'?'readonly':'readwrite'),store=tx.objectStore('meta');
+   const request=mode==='get'?store.get('profile-photo'):mode==='put'?store.put({key:'profile-photo',blob}):store.delete('profile-photo');
+   request.onsuccess=()=>{if(mode==='get')result=request.result?.blob||null;};
+   tx.oncomplete=()=>resolve(result);
+   tx.onabort=tx.onerror=()=>reject(error('No se pudo guardar o leer la foto. Revisa el espacio y los permisos del navegador.'));
+  });
+ }
+ return {getPhoto:()=>photoOperation('get'),putPhoto:blob=>photoOperation('put',blob),deletePhoto:()=>photoOperation('delete'),async transact(transform){
   const db=await open();
   return new Promise((resolve,reject)=>{
    let result,failed=false;

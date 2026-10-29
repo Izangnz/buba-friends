@@ -16,7 +16,7 @@ def runtime_files():
     files = [
         'index.html', 'manifest.webmanifest',
         'codificacion/app.js', 'codificacion/styles.css',
-        'codificacion/stories.js', 'codificacion/stories-ui.js',
+        'codificacion/stories.js', 'codificacion/stories-ui.js', 'codificacion/profile-photo.js',
         *['codificacion/assets/stories/' + name for name in ('gallery.svg', 'trail.svg', 'music.svg')],
         *['codificacion/assets/' + name for name in (
             'logo-horizontal.svg', 'logo-heart.svg', 'favicon-32.png',
