@@ -233,6 +233,9 @@ assert.equal(gallery.run('JSON.stringify(state)'),beforeGallery);assert.equal(ga
 const ready=gallery.node('#swipe-card');ready.onpointerdown(finger);ready.onpointermove({pointerId:7,clientX:-25,clientY:102});ready.onpointerup({pointerId:7,clientX:-25});assert.equal(gallery.run('state.lastPass'),galleryProfile,'Closing detail restores card gestures');
 console.log('Galería y captura táctil: transferencia de hijo, recuperación, separación de gestos, extremos, datos y controles verificados con simulaciones.');
 
+// Pinch zoom keeps native panning/zoom and cannot trigger a profile decision.
+const zoomGesture=harness();zoomGesture.start();zoomGesture.run('window.visualViewport={scale:2}');const zoomCard=zoomGesture.node('#swipe-card');zoomCard.onpointerdown(finger);zoomCard.onpointermove({pointerId:7,clientX:225,clientY:102});zoomCard.onpointerup({pointerId:7,clientX:225});assert.equal(zoomGesture.run('state.decisions.length'),0);
+
 // Repeating the demo clears only decisions/undo; all tests use isolated memory storage.
 const repeat=harness();repeat.start('women');
 repeat.run("state.me.music={artists:[{name:'Artista guardado',url:''}],songs:[]};state.matches=['vega'];state.messages={vega:[{mine:false,text:'Ejemplo anterior'},{mine:true,text:'Conversación conservada'}]};state.filters={min:25,max:25,interest:'Arte'};state.decisions=profiles.map(p=>p.id);state.lastPass=state.decisions.at(-1);decisionUntil=Date.now()+350;save();render()");

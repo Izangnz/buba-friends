@@ -5,3 +5,5 @@ require('./stories.test.cjs')().catch(e=>{console.error(e);process.exitCode=1;})
 require('./music-search.test.cjs')().catch(e=>{console.error(e);process.exitCode=1;});
 
 require('./profile-photo.test.cjs')().catch(e=>{console.error(e);process.exitCode=1;});
+
+require('./discover-layout.test.cjs')().catch(e=>{console.error(e);process.exitCode=1;});
