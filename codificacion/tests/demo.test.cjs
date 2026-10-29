@@ -7,3 +7,5 @@ require('./music-search.test.cjs')().catch(e=>{console.error(e);process.exitCode
 require('./profile-photo.test.cjs')().catch(e=>{console.error(e);process.exitCode=1;});
 
 require('./discover-layout.test.cjs')().catch(e=>{console.error(e);process.exitCode=1;});
+
+require('./collections.test.cjs')().catch(e=>{console.error(e);process.exitCode=1;});

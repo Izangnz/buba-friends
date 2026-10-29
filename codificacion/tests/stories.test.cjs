@@ -5,17 +5,17 @@ const path=require('node:path');
 const vm=require('node:vm');
 const api=require('../stories.js');
 function memoryRepository(){
- let records=new Map(),seeded=false,queue=Promise.resolve(),fail=false;
+ let records=new Map(),seeded=false,library,queue=Promise.resolve(),fail=false;
  return {
   get records(){return [...records.values()];},
   set fail(v){fail=v;},
   transact(transform){const work=queue.then(()=>{
    if(fail)throw Error('Almacenamiento bloqueado');
-   const snapshot={stories:structuredClone([...records.values()]),seeded};
+   const snapshot={stories:structuredClone([...records.values()]),seeded,library:structuredClone(library)};
    const changes=transform(snapshot),next=new Map(records);
    for(const id of changes.remove||[])next.delete(id);
    for(const item of changes.put||[])next.set(item.id,structuredClone(item));
-   records=next;if(changes.seeded!==undefined)seeded=changes.seeded;
+   records=next;if(changes.library)library=structuredClone(changes.library);if(changes.seeded!==undefined)seeded=changes.seeded;
    return structuredClone(changes.result);
   });queue=work.catch(()=>{});return work;},
  };
@@ -95,14 +95,14 @@ module.exports=async function runStoriesTests(){
   modal(html){
    const controls={},events={};let markup=html;const content={set innerHTML(v){markup=v;for(const key of Object.keys(controls))delete controls[key];}};
    const dialog={get innerHTML(){return markup;},open:true,style:style(),setAttribute(){},classList:{add(){}},
-    querySelector(s){if(s==='#story-view-content')return content;if(!s.startsWith('#')||!markup.includes(`id="${s.slice(1)}"`))return null;const n=controls[s]||=element();n.id=s.slice(1);n.disabled=new RegExp(`id="${s.slice(1)}"[^>]* disabled`).test(markup);return n;},
+    querySelectorAll(){return [];},querySelector(s){if(s==='#story-view-content')return content;if(!s.startsWith('#')||!markup.includes(`id="${s.slice(1)}"`))return null;const n=controls[s]||=element();n.id=s.slice(1);n.disabled=new RegExp(`id="${s.slice(1)}"[^>]* disabled`).test(markup);return n;},
     addEventListener(type,fn){(events[type]||=[]).push(fn);},
     dispatch(type,e){for(const fn of events[type]||[])fn(e);},
     close(){if(!this.open)return;this.open=false;for(const fn of events.close||[])fn();},
    };dialogs.push(dialog);return dialog;
   },
  };
- const context=vm.createContext(ui);vm.runInContext(fs.readFileSync(path.join(__dirname,'../stories-ui.js'),'utf8'),context);
+ const context=vm.createContext(ui);vm.runInContext(fs.readFileSync(path.join(__dirname,'../collections-ui.js'),'utf8'),context);vm.runInContext(fs.readFileSync(path.join(__dirname,'../stories-ui.js'),'utf8'),context);
  await vm.runInContext('refreshStories()',context);
  const markup=vm.runInContext('storiesConnectionsView()',context);
  assert.match(markup,/Tu historia/);assert.match(markup,/example-vega/);assert.match(markup,/example-nico/);assert.doesNotMatch(markup,/example-alma/);
@@ -141,7 +141,7 @@ module.exports=async function runStoriesTests(){
  const mine=uiRepo.records.find(s=>s.authorId==='self');
  await vm.runInContext(`openStory(${JSON.stringify(mine.id)})`,context);d=dialogs.at(-1);
  assert.equal(d.querySelector('#story-reply'),null,'Own stories cannot be replied to');
- await d.querySelector('#feature-story').onclick();assert.equal(uiRepo.records.find(s=>s.id===mine.id).featured,true);
+ await d.querySelector('#feature-story').onclick();const picker=dialogs.at(-1);picker.querySelector('#collection-cancel').onclick();assert.equal(uiRepo.records.find(s=>s.id===mine.id).featured,false,'Cancel does not save a highlight');await vm.runInContext(`storyService.createCollection('Prueba', [${JSON.stringify(mine.id)}]);refreshStories({paint:false})`,context);assert.equal(uiRepo.records.find(s=>s.id===mine.id).featured,true);
  await vm.runInContext("openStory('example-vega-v1')",context);d=dialogs.at(-1);
  d.querySelector('#story-reply-text').value='  ';await d.querySelector('#story-reply').onsubmit({preventDefault(){}});assert.equal(ui.state.messages.vega.length,0);
  d.querySelector('#story-reply-text').value='Qué buen plan';const submit=d.querySelector('#story-reply').onsubmit;
@@ -152,7 +152,7 @@ module.exports=async function runStoriesTests(){
  now+=api.DAY;await vm.runInContext('refreshStories()',context);await lateDialog.querySelector('#story-reply').onsubmit({preventDefault(){}});assert.equal(ui.state.messages.nico.length,0,'No response accepted after expiry');
  assert.equal(vm.runInContext('liveStories().length',context),0);assert.equal(vm.runInContext('highlightedStories().length',context),1);
  ui.ref=ui.state.messages.vega[0].story;assert.match(vm.runInContext('storyReference(ref)',context),/Historia no disponible/);
- await vm.runInContext(`openStory(${JSON.stringify(mine.id)},true)`,context);d=dialogs.at(-1);await d.querySelector('#delete-story').onclick();
+ await vm.runInContext(`openStory(${JSON.stringify(mine.id)},true)`,context);d=dialogs.at(-1);d.querySelector('#remove-view-image').onclick();const removal=dialogs.at(-1);await removal.querySelector('#collection-confirm-remove').onclick();
  assert.equal(uiRepo.records.some(s=>s.id===mine.id),false);assert.equal(vm.runInContext('storyURLs.size',context),0);
  await vm.runInContext('resetStories()',context);assert.equal(uiRepo.records.length,3);assert.ok(uiRepo.records.every(s=>s.createdAt===now));
  uiRepo.fail=true;await vm.runInContext('refreshStories()',context);assert.equal(vm.runInContext('storyReady',context),false);assert.match(vm.runInContext('storiesConnectionsView()',context),/Reintentar/);
