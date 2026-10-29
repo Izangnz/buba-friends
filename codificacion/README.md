@@ -250,3 +250,15 @@ Pruebas simuladas: derecha/interés, izquierda/pasar, umbral corto, vertical y g
 Pendiente de verificación táctil real: el inventario informa `The browser access host is unavailable`. No se declara reparado en Safari solo por las simulaciones. En iPhone: (1) arrastrar tarjeta a ambos lados, comprobar texto/seguimiento, soltar corto y desplazar verticalmente; (2) repetir varios gestos, cancelar y abrir i durante un arrastre; (3) recorrer 1–3 por gestos y botones, probar extremos y scroll del detalle; (4) cerrar, comprobar la misma tarjeta, probar deshacer y abrir Historias. Usar datos de ensayo si no se quieren modificar decisiones personales; no hace falta reiniciar.
 
 Recuperación anterior: etiqueta Git local `recuperacion-antes-galeria-gestos-20261029`, sobre c3e35c7. Posterior: commit final y etiqueta local `recuperacion-despues-galeria-gestos-20261029`. Sin fotos personales, almacenamiento del navegador ni secretos en el paquete.
+
+## Volver a ver perfiles · 29/10/2026 · versión 20261029-7
+
+Cuando no quedan perfiles pendientes que cumplan los filtros, Descubrir muestra «No hay más perfiles» y **Volver a ver perfiles**. Se explica que se repetirán los perfiles de la demo que cumplan los filtros actuales. El botón limpia únicamente `decisions`, `lastPass` y el bloqueo transitorio de decisiones; mantiene los filtros, preferencia, perfil, música, coincidencias y conversaciones. No llama a IndexedDB, no cambia foto, historias, fechas ni destacadas. No utiliza el reinicio global. Si falla localStorage, revierte la limpieza y conserva el estado anterior.
+
+Si ningún perfil cumple los filtros, se ofrece **Ajustar filtros**, sin botón de repetición ni promesa de que limpiar decisiones lo resuelva. También se distingue agotar solo el subconjunto filtrado de agotar todo el catálogo.
+
+Al recargar se respeta una lista de decisiones explícita, incluso vacía; solo los guardados antiguos sin esa lista usan las coincidencias como referencia de perfiles ya vistos. Repetir interés por una conexión existente no crea otra coincidencia, no muestra una nueva coincidencia ni reinserta el mensaje de ejemplo (tampoco en un chat vacío). Los nuevos matches conservan el comportamiento anterior.
+
+Pruebas con almacenamiento aislado: conservación exacta del estado salvo decisiones/deshacer, filtros y recarga; repetición con todo el catálogo o solo un subconjunto agotado; ausencia de candidatos por filtros; chat existente, chat vacío y coincidencias sin duplicados; error de persistencia con restauración; compatibilidad del guardado antiguo sin decisiones. Se ejecutan también las regresiones de gestos/galería, Historias y foto. No se han leído ni reiniciado datos del navegador del usuario.
+
+Recuperación anterior: `recuperacion-antes-repetir-perfiles-20261029`. Posterior: commit final y etiqueta local `recuperacion-despues-repetir-perfiles-20261029`. Paquete actualizado mediante el proceso habitual; quedan pendientes la revisión visual/táctil en iPhone de este botón y los gestos ya documentados.

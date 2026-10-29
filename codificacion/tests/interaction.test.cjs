@@ -233,6 +233,22 @@ assert.equal(gallery.run('JSON.stringify(state)'),beforeGallery);assert.equal(ga
 const ready=gallery.node('#swipe-card');ready.onpointerdown(finger);ready.onpointermove({pointerId:7,clientX:-25,clientY:102});ready.onpointerup({pointerId:7,clientX:-25});assert.equal(gallery.run('state.lastPass'),galleryProfile,'Closing detail restores card gestures');
 console.log('Galería y captura táctil: transferencia de hijo, recuperación, separación de gestos, extremos, datos y controles verificados con simulaciones.');
 
+// Repeating the demo clears only decisions/undo; all tests use isolated memory storage.
+const repeat=harness();repeat.start('women');
+repeat.run("state.me.music={artists:[{name:'Artista guardado',url:''}],songs:[]};state.matches=['vega'];state.messages={vega:[{mine:false,text:'Ejemplo anterior'},{mine:true,text:'Conversación conservada'}]};state.filters={min:25,max:25,interest:'Arte'};state.decisions=profiles.map(p=>p.id);state.lastPass=state.decisions.at(-1);decisionUntil=Date.now()+350;save();render()");
+const repeatBefore=JSON.parse(repeat.run('JSON.stringify(state)')),repeatStored=repeat.store['buba-friends-v1'];
+assert.ok(repeat.node('#review-profiles'));assert.match(repeat.run('content()'),/Se repetirán los perfiles de la demo/);assert.match(repeat.run('content()'),/filtros actuales/);
+repeat.node('#review-profiles').onclick();assert.equal(repeat.run('state.decisions.length'),0);assert.equal(repeat.run('state.lastPass'),null);assert.equal(repeat.run('decisionUntil'),0);assert.equal(repeat.run('current().id'),'vega');
+const repeatAfter=JSON.parse(repeat.run('JSON.stringify(state)'));assert.deepEqual({...repeatAfter,decisions:repeatBefore.decisions,lastPass:repeatBefore.lastPass},repeatBefore);
+const repeatedReload=harness(JSON.parse(repeat.store['buba-friends-v1']));assert.equal(repeatedReload.run('current().id'),'vega');assert.equal(repeatedReload.run('state.messages.vega.length'),2);assert.equal(repeatedReload.run('state.me.music.artists[0].name'),'Artista guardado');
+repeat.node('#like').onclick();repeat.node('#like')?.onclick();assert.equal(repeat.run('state.matches.filter(id=>id==="vega").length'),1);assert.equal(repeat.run('state.messages.vega.length'),2);assert.equal(repeat.run('state.messages.vega[1].text'),'Conversación conservada');assert.equal(repeat.dialog,undefined,'An existing connection is not announced as a new match');
+repeat.run('state.messages.vega=[];state.decisions=profiles.map(p=>p.id);render()');repeat.node('#review-profiles').onclick();repeat.node('#like').onclick();assert.equal(repeat.run('state.messages.vega.length'),0,'Do not reinsert the demo message in an empty existing chat');
+repeat.run("state.decisions=matchingProfiles().map(p=>p.id);state.lastPass=null;render()");assert.ok(repeat.node('#review-profiles'),'Also available when only the filtered subset is exhausted');
+repeat.run("state.filters={min:90,max:100,interest:''};state.decisions=profiles.map(p=>p.id);render()");const noEligible=repeat.run('JSON.stringify(state)');assert.equal(repeat.node('#review-profiles'),null);assert.ok(repeat.node('#adjust-empty-filters'));repeat.run('reviewProfiles()');assert.equal(repeat.run('JSON.stringify(state)'),noEligible);repeat.node('#adjust-empty-filters').onclick();assert.match(repeat.dialog.innerHTML,/Filtros/);
+const legacyWithoutDecisions=harness({...repeatBefore,decisions:undefined});assert.equal(legacyWithoutDecisions.run('state.decisions.includes("vega")'),true,'Legacy data without a decisions array retains its old fallback');
+const repeatBlocked=harness(JSON.parse(repeatStored),{failSave:true});const blockedState=repeatBlocked.run('JSON.stringify(state)');repeatBlocked.node('#review-profiles').onclick();assert.equal(repeatBlocked.run('JSON.stringify(state)'),blockedState);assert.equal(repeatBlocked.store['buba-friends-v1'],repeatStored,'Failed persistence rolls back only the proposed reset');
+console.log('Volver a ver perfiles: conservación exacta, filtros, recarga, coincidencias/chats sin duplicados y fallo de guardado verificados con datos aislados.');
+
 // Migration and invalid old data do not wipe historical conversations or write on startup.
 const old=harness({started:true,decisions:['vega','unknown'],matches:['vega'],messages:{vega:[{mine:true,text:'Mensaje anterior'}]},
   me:{name:'Demo anterior',age:'31',bio:'Guardado',interests:'Café'},filters:{min:18,max:100,interest:'Conciertos'}});
