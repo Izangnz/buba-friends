@@ -243,12 +243,12 @@ module.exports={harness};
 // Music CRUD handlers with editable row/list DOM doubles (no browser or user storage).
 const music=harness();music.start();music.run("go('profile')");music.node('#edit-profile').onclick();
 const form=music.node('#profile-form'),lists={artists:[],songs:[]},buttons={};
-function row(kind,item){const fields={'[data-music-name]':{value:item.name||''},'[data-music-artist]':{value:item.artist||''},'[data-music-url]':{value:item.url||''}};const r={querySelector:s=>fields[s]||fields['[data-music-name]'],remove(){lists[kind].splice(lists[kind].indexOf(r),1);}};for(const f of Object.values(fields))f.focus=()=>{};r.button={closest:()=>r};return r;}
+function row(kind,item){const fields={'[data-music-name]':{value:item.name||''},'[data-music-artist]':{value:item.artist||''},'[data-music-url]':{value:item.url||''}};const r={dataset:{musicItem:JSON.stringify(item)},querySelector:s=>fields[s]||fields['[data-music-name]'],remove(){lists[kind].splice(lists[kind].indexOf(r),1);}};for(const f of Object.values(fields))f.focus=()=>{};r.button={closest:()=>r};return r;}
 for(const kind of ['artists','songs'])buttons[kind]={dataset:{addMusic:kind},disabled:false};
 form.elements={name:{value:'Demo'},age:{value:'30'}};
 form.querySelectorAll=s=>s==='[data-add-music]'?Object.values(buttons):s==='[data-remove-music]'?Object.values(lists).flat().map(r=>r.button):lists[s.includes('artists')?'artists':'songs'];
-form.querySelector=s=>s==='[data-save-profile]'?{}:{get children(){return lists[s.includes('artists')?'artists':'songs'];},get lastElementChild(){return this.children.at(-1);},insertAdjacentHTML(){const kind=s.includes('artists')?'artists':'songs';lists[kind].push(row(kind,{}));}};
-music.run('bindMusic()');
+form.querySelector=s=>s==='[data-save-profile]'?{}:{get children(){return lists[s.includes('artists')?'artists':'songs'];},get lastElementChild(){return this.children.at(-1);},insertAdjacentHTML(position,markup){const kind=s.includes('artists')?'artists':'songs';const encoded=markup.match(/data-music-item="([^"]*)"/)[1];const item=JSON.parse(encoded.replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&'));lists[kind].push(row(kind,item));}};
+music.run("var nextMusic=0; openMusicSearch=(kind,add)=>add({name:'Manual '+(++nextMusic),artist:kind==='songs'?'Intérprete':'',url:'',manual:true}); bindMusic();");
 buttons.artists.onclick();assert.equal(lists.artists.length,1);lists.artists[0].querySelector('[data-music-name]').value='<Artista & prueba>';
 buttons.songs.onclick();lists.songs[0].querySelector('[data-music-name]').value='Canción';lists.songs[0].querySelector('[data-music-artist]').value='Intérprete';
 const data={name:'Demo',age:'30',bio:'',interests:''};music.submit('#profile-form',data);
@@ -256,8 +256,29 @@ assert.equal(music.run('state.me.music.artists[0].name'),'<Artista & prueba>');a
 const reloadMusic=harness(JSON.parse(music.store['buba-friends-v1']));assert.equal(reloadMusic.run('state.me.music.songs[0].artist'),'Intérprete');
 lists.artists[0].querySelector('[data-music-name]').value='Editado';form.data=data;form.onsubmit({preventDefault(){},target:form});assert.equal(music.run('state.me.music.artists[0].name'),'Editado');
 lists.artists[0].button.onclick();assert.equal(lists.artists.length,0);form.onsubmit({preventDefault(){},target:form});assert.equal(music.run('state.me.music.artists.length'),0);
-for(let i=0;i<6;i++)buttons.artists.onclick();assert.equal(lists.artists.length,5);assert.equal(buttons.artists.disabled,true);
-for(let i=0;i<4;i++)buttons.songs.onclick();assert.equal(lists.songs.length,3);assert.equal(buttons.songs.disabled,true);
+for(let i=0;i<5;i++)buttons.artists.onclick();assert.throws(()=>buttons.artists.onclick(),/límite/);assert.equal(lists.artists.length,5);assert.equal(buttons.artists.disabled,true);
+for(let i=0;i<2;i++)buttons.songs.onclick();assert.throws(()=>buttons.songs.onclick(),/límite/);assert.equal(lists.songs.length,3);assert.equal(buttons.songs.disabled,true);
+// Use the actual add handler with a catalog item, including duplicate rejection and reload.
+lists.artists.splice(0);lists.songs.splice(0);
+music.run("openMusicSearch=(kind,add)=>add({provider:'itunes',providerId:42,type:'artist',name:'Catálogo',artist:'',url:'https://music.apple.com/es/artist/42'});bindMusic()");
+buttons.artists.onclick();assert.throws(()=>buttons.artists.onclick(),/Ya has añadido/);assert.equal(lists.artists.length,1);
+form.onsubmit({preventDefault(){},target:form});
+const catalogReload=harness(JSON.parse(music.store['buba-friends-v1']));assert.equal(catalogReload.run('state.me.music.artists[0].providerId'),42);assert.equal(catalogReload.run('state.me.music.artists[0].type'),'artist');assert.match(catalogReload.run('state.me.music.artists[0].url'),/^https:\/\/music.apple.com/);
+lists.artists[0].button.onclick();form.onsubmit({preventDefault(){},target:form});assert.equal(music.run('state.me.music.artists.length'),0);
 const musicForm={querySelectorAll:s=>s.includes('artists')?[row('artists',{name:'Artista',url:'https://open.spotify.com.evil.test/artist/'+ 'a'.repeat(22)})]:[]};
 form.querySelectorAll=musicForm.querySelectorAll;form.onsubmit({preventDefault(){},target:form});assert.equal(music.run('state.me.music.artists.length'),0);
 console.log('Música: controles añadir/editar/eliminar, límites 5/3, escape HTML, guardado y recarga simulados correctos.');
+
+// Catalog metadata and old Spotify links survive the existing normalization/save path.
+const legacyMusic={artists:[{name:'Anterior',url:'https://open.spotify.com/artist/'+'a'.repeat(22)}],songs:[]};
+assert.equal(music.run(`normalizeMusic(${JSON.stringify(legacyMusic)}).artists[0].url`),legacyMusic.artists[0].url);
+const catalog={provider:'itunes',providerId:313845115,type:'artist',name:'ROSALÍA',artist:'',url:'https://music.apple.com/es/artist/rosalia/313845115?uo=4'};
+assert.equal(music.run(`normalizeMusic({artists:[${JSON.stringify(catalog)}]}).artists[0].providerId`),313845115);
+assert.equal(music.run(`sameMusic(${JSON.stringify(catalog)},{name:' rosalía ',artist:''})`),true);
+assert.equal(music.run(`sameMusic(${JSON.stringify(catalog)},{...${JSON.stringify(catalog)},name:'Otro nombre'})`),true);
+for(const url of ['https://music.apple.com.evil.test/a','http://music.apple.com/a','https://user@music.apple.com/a','https://music.apple.com:444/a','javascript:alert(1)'])assert.throws(()=>music.run(`catalogURL(${JSON.stringify(url)})`));
+assert.match(music.run(`musicView({artists:[${JSON.stringify(catalog)}]})`),/Ver en Apple Music/);
+assert.match(music.run("musicView({artists:[{name:'Manual',manual:true}]})"),/Introducido manualmente/);
+assert.equal(music.run(`catalogItems({results:[{wrapperType:'artist',artistId:1,artistName:'Catálogo',artistLinkUrl:'https://music.apple.com/es/artist/1'}]},'artists').length`),1);
+assert.equal(music.run(`catalogItems({results:[{kind:'song',trackId:2,trackName:'Título',artistName:'Artista',collectionName:'Álbum',trackViewUrl:'https://music.apple.com/es/album/2'}]},'songs')[0].album`),'Álbum');
+assert.equal(music.run(`catalogItems({results:[{kind:'song',trackId:2,trackName:'Título',artistName:'Artista',trackViewUrl:'https://evil.test/'}]},'songs').length`),0);
