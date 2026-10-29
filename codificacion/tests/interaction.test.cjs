@@ -5,9 +5,11 @@ const vm = require('node:vm');
 const assert = require('node:assert/strict');
 const source = fs.readFileSync(path.join(__dirname, '../app.js'), 'utf8');
 
-function harness(saved, {failSave = false} = {}) {
+function harness(saved, {failSave = false, reducedMotion = false} = {}) {
   const store = saved ? {'buba-friends-v1': JSON.stringify(saved)} : {};
   let html = '', nodes = {}, lastDialog, clock = 1000;
+  const windowEvents=new Map(),documentEvents=new Map();
+  const listen=(map,type,fn)=>{if(!map.has(type))map.set(type,new Set());map.get(type).add(fn);};
   const classList = () => ({add(){}, remove(){}});
   const element = () => ({
     elements:{name:{value:''},age:{value:''}},addEventListener(){},querySelectorAll(){return [];},value:'', disabled:false, isConnected:true, style:{}, classList:classList(),
@@ -16,7 +18,7 @@ function harness(saved, {failSave = false} = {}) {
     remove(){this.isConnected=false;}, scrollIntoView(){},
     setPointerCapture(id){this.capture=id;}, hasPointerCapture(id){return this.capture===id;},
     releasePointerCapture(){this.capture=null;},
-    querySelector(){return {style:{},textContent:''};},
+    querySelector(s){this.parts??={};return this.parts[s]??={style:{},textContent:''};},
   });
   function select(markup, id) {
     const n=element();
@@ -47,7 +49,7 @@ function harness(saved, {failSave = false} = {}) {
   const document={
     activeElement:null,
     querySelector(s){return s==='#app'?root:s.startsWith('dialog')&&lastDialog&&!lastDialog.closed?lastDialog:null;},
-    body:{append(){},classList:classList()}, addEventListener(){},
+    body:{append(){},classList:classList()}, addEventListener(type,fn){listen(documentEvents,type,fn);},removeEventListener(type,fn){documentEvents.get(type)?.delete(fn);},
     createElement(tag){
       const n=element();
       if(tag==='dialog'){
@@ -66,9 +68,9 @@ function harness(saved, {failSave = false} = {}) {
             }
             return controls[s];
           },
-          addEventListener(type,fn){events[type]=fn;},
-          showModal(){lastDialog=this;this.closed=false;},
-          close(){this.closed=true;events.close?.();},
+          addEventListener(type,fn){(events[type]??=[]).push(fn);},
+          showModal(){lastDialog=this;this.closed=false;this.open=true;},
+          close(){this.closed=true;this.open=false;for(const fn of events.close||[])fn();},
         });
       }
       return n;
@@ -83,11 +85,12 @@ function harness(saved, {failSave = false} = {}) {
     *[Symbol.iterator](){yield* Object.entries(this.data);}
   }
   const context=vm.createContext({document,localStorage:{getItem:k=>store[k]||null,setItem:(k,v)=>{if(failSave)throw Error('blocked');store[k]=v;}},
-    URL,window:{scrollTo(){}},setTimeout(){},Date:{now:()=>clock},FormData});
+    URL,window:{scrollTo(){},matchMedia:()=>({matches:reducedMotion}),addEventListener(type,fn){listen(windowEvents,type,fn);},removeEventListener(type,fn){windowEvents.get(type)?.delete(fn);}},setTimeout(){},Date:{now:()=>clock},FormData});
   vm.runInContext(source,context);
   return {
     run:code=>vm.runInContext(code,context),node:s=>nodes[s]||query(s),get dialog(){return lastDialog;},store,
     tick(ms=400){clock+=ms;},
+    blur(){for(const fn of windowEvents.get('blur')||[])fn();},hide(){document.visibilityState='hidden';for(const fn of documentEvents.get('visibilitychange')||[])fn();document.visibilityState='visible';},
     choose(choice){const b=nodes['[data-preference]:'+choice];assert.ok(b);b.onclick();},
     start(choice='both'){this.node('#adult').onchange({target:{checked:true}});this.node('#start').onclick();this.submit('#profile-form',{name:'Demo',age:'30',bio:'',interests:''});if(!failSave)this.choose(choice);},
     submit(selector,data){const form=this.node(selector);form.data=data;form.onsubmit({preventDefault(){},target:form});},
@@ -194,6 +197,41 @@ card=swipe(-120);card.onpointerup({pointerId:1});assert.equal(swipeTest.run('sta
 swipeTest.tick();swipeTest.node('#undo').onclick();swipeTest.tick();swipe(120);assert.equal(swipeTest.run('state.matches[0]'),'vega');
 assert.equal(swipeTest.run('state.decisions.length'),1);
 console.log('Botones y gestos simulados: pasar/interés, umbral, vertical, información excluida, cancelar y final duplicado correctos.');
+
+// Touch capture hand-off regression: lostpointercapture from an image bubbles to its card.
+const touch=harness();touch.start();
+const finger={isPrimary:true,pointerType:'touch',button:0,pointerId:7,clientX:100,clientY:100,target:{closest:()=>null}};
+let touchCard=touch.node('#swipe-card');touchCard.onpointerdown(finger);assert.equal(touchCard.capture,7,'Capture is established before movement');
+touchCard.onpointermove({pointerId:7,clientX:145,clientY:102});const following=touchCard.style.transform;assert.match(following,/45px/);assert.equal(touchCard.querySelector('.swipe-hint').textContent,'ME INTERESA ♥');
+touchCard.onlostpointercapture({pointerId:7,target:finger.target});assert.equal(touchCard.style.transform,following,'Ignore bubbled child capture loss');
+touchCard.onpointermove({pointerId:7,clientX:225,clientY:102});touchCard.onpointerup({pointerId:7,clientX:225});touchCard.onpointerup({pointerId:7,clientX:225});assert.equal(touch.run('state.decisions.length'),1);assert.equal(touch.run('state.matches[0]'),'vega');
+touch.node('#like').onclick();assert.equal(touch.run('state.decisions.length'),1,'Rapid button and gesture do not duplicate a decision');touch.dialog.querySelector('#keep').onclick();touch.tick();
+touchCard=touch.node('#swipe-card');touchCard.onpointerdown(finger);touchCard.onpointermove({pointerId:7,clientX:-25,clientY:102});assert.equal(touchCard.querySelector('.swipe-hint').textContent,'PASAR ✕');touchCard.onpointerup({pointerId:7,clientX:-25});assert.equal(touch.run('state.decisions.length'),2);assert.equal(touch.run('state.lastPass'),'leo');
+touchCard=touch.node('#swipe-card');touchCard.onpointerdown(finger);touchCard.onpointermove({pointerId:7,clientX:225,clientY:102});touchCard.onpointerup({pointerId:7,clientX:225});assert.equal(touch.run('state.decisions.length'),2,'The existing decision debounce also covers gestures');touch.tick();touch.node('#undo').onclick();assert.equal(touch.run('current().id'),'leo');assert.equal(touch.run('state.matches[0]'),'vega');
+// Cancellation, actual surface capture loss, blur, hidden page, rendering and capture errors.
+const cancelTouch=harness();cancelTouch.start('men');let cancelCard=cancelTouch.node('#swipe-card');
+const begin=()=>{cancelCard.onpointerdown(finger);cancelCard.onpointermove({pointerId:7,clientX:225,clientY:102});};
+begin();cancelCard.onlostpointercapture({pointerId:99,target:cancelCard});assert.notEqual(cancelCard.style.transform,'');cancelCard.onlostpointercapture({pointerId:7,target:cancelCard});assert.equal(cancelCard.style.transform,'');cancelCard.onpointerup({pointerId:7});assert.equal(cancelTouch.run('state.decisions.length'),0);
+begin();cancelCard.onpointermove({pointerId:7,clientX:110,clientY:250});cancelCard.onpointerup({pointerId:7,clientX:110,clientY:250});assert.equal(cancelTouch.run('state.decisions.length'),0,'A gesture turning vertical does not decide');begin();cancelTouch.blur();assert.equal(cancelCard.style.transform,'');begin();cancelTouch.hide();assert.equal(cancelCard.style.transform,'');
+begin();cancelCard.onpointercancel({pointerId:7});assert.equal(cancelCard.capture,null);assert.equal(cancelCard.querySelector('.swipe-hint').textContent,'');
+begin();cancelCard.ondragstart({preventDefault(){}});assert.equal(cancelCard.style.transform,'');
+const capture=cancelCard.setPointerCapture;cancelCard.setPointerCapture=()=>{throw Error('Inactive pointer');};cancelCard.onpointerdown(finger);cancelCard.onpointerup({pointerId:7,clientX:225});assert.equal(cancelTouch.run('state.decisions.length'),0);cancelCard.setPointerCapture=capture;
+begin();cancelTouch.run("go('matches')");assert.equal(cancelCard.style.transform,'');cancelCard.onpointerup({pointerId:7,clientX:225});assert.equal(cancelTouch.run('state.decisions.length'),0);cancelTouch.run("go('discover')");cancelCard=cancelTouch.node('#swipe-card');begin();cancelCard.onpointerup({pointerId:7,clientX:225});assert.equal(cancelTouch.run('state.decisions.length'),1,'Next screen can start a fresh gesture');
+const reduced=harness(null,{reducedMotion:true});reduced.start();const reducedCard=reduced.node('#swipe-card');reducedCard.onpointerdown(finger);reducedCard.onpointermove({pointerId:7,clientX:160,clientY:102});assert.match(reducedCard.style.transform,/rotate\(0deg\)/);
+// Detail gallery is an independent gesture surface; placeholder frames make no image requests.
+const gallery=harness();gallery.start();const beforeGallery=gallery.run('JSON.stringify(state)'),savedGallery=gallery.store['buba-friends-v1'],galleryProfile=gallery.run('current().id');
+assert.equal(gallery.run('profiles.every(p=>profileGallery(p)[0].src===portrait(p))'),true,'Every profile uses its current optimized portrait first');assert.equal(gallery.run('profileGallery(current()).length'),3);assert.equal(gallery.run('profileGallery(current())[0].src'),gallery.run('portrait(current())'));assert.equal(gallery.run("profileGallery(current()).filter(i=>i.type==='demo').length"),2);
+assert.equal(gallery.run("profileGallery({...current(),images:[current().image,{src:'extra-a.jpg',alt:'Extra A'},'extra-b.jpg']}).filter(i=>i.type==='image').length"),3);
+const underlying=gallery.node('#swipe-card');underlying.onpointerdown(finger);underlying.onpointermove({pointerId:7,clientX:-25,clientY:102});gallery.node('#detail').onclick();assert.equal(underlying.style.transform,'');underlying.onpointerup({pointerId:7,clientX:-25});
+let gd=gallery.dialog,viewport=gd.querySelector('#gallery-viewport');const count=()=>gd.querySelector('#gallery-counter').textContent;
+assert.equal(count(),'1 de 3');gd.querySelector('#gallery-prev').onclick();assert.equal(count(),'1 de 3');gd.querySelector('#gallery-next').onclick();assert.equal(count(),'2 de 3');assert.match(gd.querySelector('#gallery-slide').innerHTML,/Foto de prueba · Demo/);assert.doesNotMatch(gd.querySelector('#gallery-slide').innerHTML,/<img/);gd.querySelector('#gallery-next').onclick();gd.querySelector('#gallery-next').onclick();assert.equal(count(),'3 de 3');assert.equal(gd.querySelector('#gallery-next').disabled,true);
+let stopped=0;function slide(dx,dy=2){viewport.onpointerdown({...finger,stopPropagation(){stopped++;}});viewport.onpointermove({pointerId:7,clientX:100+dx,clientY:100+dy,stopPropagation(){stopped++;}});viewport.onpointerup({pointerId:7,clientX:100+dx,stopPropagation(){stopped++;}});}
+slide(-100);assert.equal(count(),'3 de 3');slide(100);assert.equal(count(),'2 de 3');slide(15);assert.equal(count(),'2 de 3');slide(5,90);assert.equal(count(),'2 de 3');slide(-100);assert.equal(count(),'3 de 3');assert.ok(stopped>=15);
+viewport.onkeydown({key:'ArrowLeft',preventDefault(){},stopPropagation(){}});assert.equal(count(),'2 de 3');gd.querySelector('#gallery-prev').onclick();assert.equal(count(),'1 de 3');
+const image=gd.querySelector('#gallery-slide').querySelector('img');image.onerror();assert.match(gd.querySelector('#gallery-slide').innerHTML,/Imagen no disponible/);
+assert.equal(gallery.run('JSON.stringify(state)'),beforeGallery);assert.equal(gallery.store['buba-friends-v1'],savedGallery,'Gallery never writes profile decisions or storage');gd.querySelector('.dialog-close').onclick();assert.equal(gallery.run('current().id'),galleryProfile);assert.equal(gallery.run('JSON.stringify(state)'),beforeGallery);
+const ready=gallery.node('#swipe-card');ready.onpointerdown(finger);ready.onpointermove({pointerId:7,clientX:-25,clientY:102});ready.onpointerup({pointerId:7,clientX:-25});assert.equal(gallery.run('state.lastPass'),galleryProfile,'Closing detail restores card gestures');
+console.log('Galería y captura táctil: transferencia de hijo, recuperación, separación de gestos, extremos, datos y controles verificados con simulaciones.');
 
 // Migration and invalid old data do not wipe historical conversations or write on startup.
 const old=harness({started:true,decisions:['vega','unknown'],matches:['vega'],messages:{vega:[{mine:true,text:'Mensaje anterior'}]},

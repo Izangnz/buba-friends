@@ -26,6 +26,8 @@ def runtime_files():
     ]
     for profile in catalog:
         files.extend([f"codificacion/assets/portraits/{profile['id']}.jpg", profile['thumbnail']])
+        for image in profile.get('images', []):
+            files.append(image if isinstance(image, str) else image['src'])
     for name in files:
         path = ROOT / name
         assert path.is_file() and not path.is_symlink(), name
