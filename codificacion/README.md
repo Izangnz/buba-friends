@@ -306,3 +306,13 @@ Corrección limitada a `.featured-section`. El marco anterior era un ítem flex 
 Comprobaciones proporcionales: revisión de cascada/especificidad y de las dimensiones declaradas para imagen vertical/horizontal/cuadrada, nombres largos y varias columnas; igualdad fuente/docs y paquete HTTP aislado. No se han repetido baterías de lógica ajenas al CSS. El host de navegador sigue indisponible: **falta medir ancho/alto y comprobar visualmente en iPhone a 375 y 390 px**, con esas proporciones de imagen, nombre largo, borde y botón +. No se presenta la inspección estática como validación visual ni como reproducción exacta del layout de Safari.
 
 Recuperación anterior: `recuperacion-antes-portadas-circulares-20261030`; posterior: commit final y `recuperacion-despues-portadas-circulares-20261030`. Sin acceso a fotos ni datos del navegador.
+
+## Recorte interior de avatares de Historias · 30/10/2026 · CSS 20261030-3
+
+La captura real del usuario muestra el aro circular de Historias con una imagen vertical ovalada que sobresale por debajo, mientras Tu historia conserva su forma. La corrección previa estaba limitada a `.featured-section` y no alcanzaba `.stories-section`. En el HTML de las conexiones la imagen es un img sin clase portrait: no le afectan las alturas de retratos de Descubrir. El defecto de estilos era dejar la imagen en una rejilla con dimensiones porcentuales/intrínsecas y sin recorte del marco en Historias.
+
+Se comparte el marco cuadrado no compresible y con overflow hidden entre ambos listados, sin incluir `.story-viewer` ni las tarjetas. Imágenes directas absolutamente posicionadas, block, ancho/alto 100 %, proporción 1 y object-fit cover: no participan en las dimensiones del marco ni pueden sobresalir. La foto propia anidada y la silueta se limitan a la misma caja. Los nombres y el botón + permanecen fuera del marco. Tamaños declarados de 70×70 px a 375/390 px y 74×74 px en escritorio, borde incluido.
+
+Verificación proporcional: inspección de la captura, selectores y cascada; fuente/docs y HTTP de publicación. Sin cambios en JS, datos, migración, visor grande o retratos de Descubrir. Falta comprobación visual y medición real en iPhone del recorte de imágenes verticales, horizontales y cuadradas en Historias y Destacadas; no se afirma validada la apariencia por pruebas de lógica.
+
+Recuperación anterior: `recuperacion-antes-recorte-avatares-20261030`; posterior: commit final y `recuperacion-despues-recorte-avatares-20261030`.
