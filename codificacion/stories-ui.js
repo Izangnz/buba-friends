@@ -14,11 +14,21 @@ function liveStories(){return storyRecords.filter(s=>storyAPI.active(s,Date.now(
 function highlightedStories(){return storyRecords.filter(s=>s.authorId==='self'&&s.featured);}
 function storyAuthor(s){return s.authorId==='self'?state.me.name:profiles.find(p=>p.id===s.authorId)?.name||'Perfil ficticio';}
 function storyAge(s){const minutes=Math.max(0,Math.floor((Date.now()-s.createdAt)/60000));return minutes<1?'Ahora':minutes<60?`Hace ${minutes} min`:`Hace ${Math.floor(minutes/60)} h`;}
-function storyButton(s,featured=false){return `<button type="button" class="story-item ${s.seenAt!==null?'seen':'unseen'}" data-story-id="${esc(s.id)}" data-story-featured="${featured}"><span class="story-circle"><img src="${esc(storyURL(s))}" alt="" loading="lazy"></span><span>${esc(storyAuthor(s))}</span><small>${featured?'Destacada':s.example?'Ejemplo':''}</small><span class="sr-only">${s.seenAt!==null?'Historia vista':'Historia sin ver'}</span></button>`;}
+function storyAvatar(authorId){
+ if(authorId==='self'&&globalThis.BubaPhoto)return BubaPhoto.avatar();
+ const profile=profiles.find(p=>p.id===authorId);
+ if(profile&&typeof thumbnail==='function')return `<img src="${esc(thumbnail(profile))}" alt="" loading="lazy">`;
+ return '<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="34" r="17"/><path d="M17 91v-8a33 33 0 0 1 66 0v8z"/></svg>';
+}
+function storiesByAuthor(records){
+ const groups=new Map();for(const record of records){if(!groups.has(record.authorId))groups.set(record.authorId,[]);groups.get(record.authorId).push(record);}
+ return [...groups.values()].map(group=>group.sort((a,b)=>a.createdAt-b.createdAt||a.id.localeCompare(b.id)));
+}
+function storyButton(s,featured=false,group=[s]){const selected=group.find(item=>item.seenAt==null)||s,seen=group.every(item=>item.seenAt!=null);return `<button type="button" class="story-item ${seen?'seen':'unseen'}" data-story-id="${esc(selected.id)}" data-story-author="${esc(s.authorId)}" data-story-featured="${featured}"><span class="story-circle">${storyAvatar(s.authorId)}</span><span>${s.authorId==='self'?'Tu historia':esc(storyAuthor(s))}</span><small>${featured?'Destacada':group.some(item=>item.example)?'Ejemplo':''}</small><span class="sr-only">${group.length} ${group.length===1?'historia':'historias'} · ${seen?'Vistas':'Hay historias sin ver'}</span></button>`;}
 function storiesConnectionsView(){
- const own=liveStories().find(s=>s.authorId==='self'),others=liveStories().filter(s=>s.authorId!=='self');
+ const groups=storiesByAuthor(liveStories()),own=groups.find(group=>group[0].authorId==='self'),others=groups.filter(group=>group[0].authorId!=='self');
  const disabled=storyReady?'':'disabled';
- return `<section class="stories-section" aria-labelledby="stories-title"><h2 id="stories-title" class="section-title">Historias</h2><p class="stories-note">Ejemplos y publicaciones locales · 24 horas. El aro indica historias vistas, no lectura del chat.</p><div class="story-strip"><div class="story-own">${own?`<button type="button" class="story-item ${own.seenAt!==null?'seen':'unseen'}" data-story-id="${esc(own.id)}" data-story-featured="false"><span class="story-circle">${globalThis.BubaPhoto?BubaPhoto.avatar():''}</span><span>Tu historia</span></button><button type="button" class="story-add" id="new-story" aria-label="Añadir una historia">+</button>`:`<button type="button" class="story-item" id="new-story" ${disabled}><span class="story-circle story-plus">${globalThis.BubaPhoto?BubaPhoto.avatar():''}<span class="photo-story-plus" aria-hidden="true">+</span></span><span>Tu historia</span></button>`}</div>${others.map(s=>storyButton(s)).join('')}${!others.length?'<p class="stories-empty">Aún no hay historias activas de tus conexiones. <button class="text-btn" data-nav="discover">Descubrir perfiles</button></p>':''}</div>${storyFailure?`<p class="form-error" role="status">${esc(storyFailure)} <button class="text-btn" id="retry-stories">Reintentar</button></p>`:!storyReady?'<p class="stories-note" role="status">Preparando historias locales…</p>':''}</section>`;
+ return `<section class="stories-section" aria-labelledby="stories-title"><h2 id="stories-title" class="section-title">Historias</h2><p class="stories-note">Demo local · Historias de 24 horas. El aro rosa indica historias sin ver, no lectura del chat.</p><div class="story-strip" aria-label="Historias por persona"><div class="story-own">${own?storyButton(own[0],false,own):`<button type="button" class="story-item no-story" data-new-story ${disabled}><span class="story-circle">${storyAvatar('self')}</span><span>Tu historia</span></button>`}<button type="button" class="story-add" id="new-story" aria-label="Añadir una historia" ${disabled}>+</button></div>${others.map(group=>storyButton(group[0],false,group)).join('')}</div>${!others.length?'<p class="stories-empty">Aún no hay historias activas de tus conexiones. <button class="text-btn" data-nav="discover">Descubrir perfiles</button></p>':''}${storyFailure?`<p class="form-error" role="status">${esc(storyFailure)} <button class="text-btn" id="retry-stories">Reintentar</button></p>`:!storyReady?'<p class="stories-note" role="status">Preparando historias locales…</p>':''}</section>`;
 }
 function storiesProfileView(){return `<section class="featured-section" aria-labelledby="featured-title"><h2 class="section-title" id="featured-title">Destacadas</h2><p class="stories-note">Tus historias guardadas aquí siguen disponibles después de 24 horas. Solo en este navegador.</p><div class="story-strip">${highlightedStories().map(s=>storyButton(s,true)).join('')||'<p class="stories-empty">Aún no tienes destacadas. Abre una historia propia para guardarla aquí.</p>'}</div></section>`;}
 function storyReferenceInner(ref){
@@ -27,6 +37,7 @@ function storyReferenceInner(ref){
 }
 function storyReference(ref){return ref?`<div class="story-reference" data-story-reference="${esc(ref.id)}">${storyReferenceInner(ref)}</div>`:'';}
 function repaintStories(){
+ if(storyViewer?.dialog.open)return;
  if(page==='stories'||(page==='profile'&&!editingProfile))render();
  else if(page==='matches'&&activeChat)root.querySelectorAll('[data-story-reference]').forEach(el=>{
   const ref=state.messages[activeChat]?.find(m=>m.story?.id===el.dataset.storyReference)?.story;if(ref)el.innerHTML=storyReferenceInner(ref);
@@ -47,6 +58,7 @@ async function refreshStories({paint=true}={}){
 }
 function bindStories(){
  const create=root.querySelector('#new-story');if(create)create.onclick=openStoryComposer;
+ root.querySelectorAll('[data-new-story]').forEach(b=>b.onclick=openStoryComposer);
  const retry=root.querySelector('#retry-stories');if(retry)retry.onclick=()=>refreshStories();
  root.querySelectorAll('[data-story-id]').forEach(b=>b.onclick=()=>openStory(b.dataset.storyId,b.dataset.storyFeatured==='true'));
 }
@@ -70,44 +82,64 @@ async function openStoryComposer(){
   catch(e){error.textContent=e.message;busy=false;publish.disabled=false;input.disabled=false;}
  };
 }
-async function openStory(id,featured=false){
+function storyViewerMarkup(record,list,index,featured){
+ const own=record.authorId==='self';
+ return `<header class="story-view-header"><ol class="story-segments" aria-label="${list.length} historias · Avance manual">${list.map((item,i)=>`<li class="${i===index?'is-selected':''}" ${i===index?'aria-current="step"':''}><span class="sr-only">Historia ${i+1}${i===index?', seleccionada':''}</span></li>`).join('')}</ol><div class="story-author-line"><span class="story-author-avatar">${storyAvatar(record.authorId)}</span><div><h2>${esc(storyAuthor(record))}</h2><p class="story-time">${storyAge(record)} · Demo local${record.example?' · Ejemplo':''}${featured?' · Destacada':''}</p></div></div></header><div class="story-stage"><img class="story-image" src="${esc(storyURL(record))}" alt="${record.example?'Ilustración de ejemplo: '+esc(record.caption):'Imagen de la historia de '+esc(storyAuthor(record))}"><button type="button" class="story-tap-zone story-tap-prev" id="story-tap-prev" tabindex="-1" aria-hidden="true" ${index===0?'disabled':''}></button><button type="button" class="story-tap-zone story-tap-next" id="story-tap-next" tabindex="-1" aria-hidden="true" ${index===list.length-1?'disabled':''}></button></div><footer class="story-view-footer">${record.caption?`<p class="story-caption">${esc(record.caption)}</p>`:''}<div class="story-controls"><button type="button" id="story-prev" ${index===0?'disabled':''} aria-label="Historia anterior">‹ Anterior</button><span aria-live="polite">${index+1} de ${list.length} · Manual</span><button type="button" id="story-next" ${index===list.length-1?'disabled':''} aria-label="Historia siguiente">Siguiente ›</button></div>${own?`<div class="panel-actions"><button type="button" class="btn light" id="feature-story">${record.featured?'Quitar de destacadas':'Guardar en destacadas'}</button><button type="button" class="danger" id="delete-story">Eliminar historia</button></div><p class="stories-note">Solo en este navegador. Eliminar también la quita de destacadas.</p>`:`<form id="story-reply" class="story-reply"><label class="story-field">Responder a esta historia<input id="story-reply-text" maxlength="1000" autocomplete="off" required></label><button class="btn" id="story-reply-send">Enviar respuesta</button><p class="stories-note">Mensaje local de demo. No se envía a nadie.</p></form>`}<p class="form-error" role="alert" id="story-view-error"></p></footer>`;
+}
+async function openStory(id,featured=false,session=null){
+ if(session?.closed)return;
  const sequence=++storyOpenSequence;
+ if(!session)session={restore:true,closed:false,busy:false,openerId:id,scrollX:window.scrollX||0,scrollY:window.scrollY||0,stripLeft:root.querySelector('.story-strip')?.scrollLeft||0};
  try{
   await refreshStories({paint:false});
   if(!storyReady)throw new Error(storyFailure);
   const record=await storyService.get(id,{allowFeatured:featured});
-  if(sequence!==storyOpenSequence)return;
+  if(sequence!==storyOpenSequence||session.closed)return;
   if(!record||(record.authorId!=='self'&&!state.matches.includes(record.authorId)))throw new Error('Historia no disponible.');
   await storyService.markSeen(id);await refreshStories({paint:false});
-  const list=featured?highlightedStories():liveStories(),index=list.findIndex(s=>s.id===id);
-  if(index<0||sequence!==storyOpenSequence)throw new Error('Historia no disponible.');
-  const own=record.authorId==='self';
-  const d=modal(`<h2>${esc(storyAuthor(record))}</h2><p class="story-time">${record.example?'Historia de ejemplo · ':''}${featured?'Destacada · ':''}${storyAge(record)} · ${index+1} de ${list.length}</p><img class="story-image" src="${esc(storyURL(record))}" alt="${record.example?'Ilustración de ejemplo: '+esc(record.caption):'Imagen de la historia de '+esc(storyAuthor(record))}">${record.caption?`<p class="story-caption">${esc(record.caption)}</p>`:''}<div class="story-controls"><button type="button" class="btn light" id="story-prev" ${index===0?'disabled':''} aria-label="Historia anterior">‹ Anterior</button><button type="button" class="btn light" id="story-next" ${index===list.length-1?'disabled':''} aria-label="Historia siguiente">Siguiente ›</button></div>${own?`<div class="panel-actions"><button type="button" class="btn light" id="feature-story">${record.featured?'Quitar de destacadas':'Guardar en destacadas'}</button><button type="button" class="danger" id="delete-story">Eliminar historia</button></div><p class="stories-note">Solo se guarda en este navegador. Eliminar también la quita de destacadas.</p>`:`<form id="story-reply" class="story-reply"><label class="story-field">Responder a esta historia<input id="story-reply-text" maxlength="1000" autocomplete="off" required></label><button class="btn" id="story-reply-send">Enviar respuesta</button><p class="stories-note">Mensaje local para esta coincidencia simulada. No se envía a nadie.</p></form>`}<p class="form-error" role="alert" id="story-view-error"></p>`);
-  d.classList.add('story-viewer');storyViewer={id,featured,dialog:d};
-  d.addEventListener('close',()=>{if(storyViewer?.dialog===d)storyViewer=null;});
-  d.querySelector('#story-prev').onclick=()=>{if(index>0)openStory(list[index-1].id,featured);};
-  d.querySelector('#story-next').onclick=()=>{if(index<list.length-1)openStory(list[index+1].id,featured);};
+  const list=(featured?highlightedStories():liveStories()).filter(s=>s.authorId===record.authorId).sort((a,b)=>a.createdAt-b.createdAt||a.id.localeCompare(b.id)),index=list.findIndex(s=>s.id===id);
+  if(sequence!==storyOpenSequence||session.closed)return;
+  if(index<0)throw new Error('Historia no disponible.');
+  const own=record.authorId==='self',markup=storyViewerMarkup(record,list,index,featured);
+  let d=session.dialog;
+  if(!d){
+   d=modal(`<div id="story-view-content">${markup}</div>`);session.dialog=d;
+   d.classList.add('story-viewer');document.body.classList.add('story-view-open');
+   const fit=()=>{const v=window.visualViewport,mobile=window.innerWidth<=600;if(mobile&&v){d.style.height=v.height+'px';d.style.maxHeight=v.height+'px';d.style.top=v.offsetTop+'px';d.style.setProperty('--story-height',v.height+'px');}else{d.style.height='';d.style.maxHeight='';d.style.top='';d.style.removeProperty('--story-height');}};
+   fit();window.visualViewport?.addEventListener('resize',fit);window.visualViewport?.addEventListener('scroll',fit);window.addEventListener('resize',fit);
+   d.addEventListener('keydown',e=>{if(e.target?.closest?.('input,textarea,select,button'))return;if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();session.move?.(e.key==='ArrowRight'?1:-1);}});
+   d.addEventListener('close',()=>{
+    session.closed=true;++storyOpenSequence;if(storyViewer?.dialog===d)storyViewer=null;
+    document.body.classList.remove('story-view-open');window.visualViewport?.removeEventListener('resize',fit);window.visualViewport?.removeEventListener('scroll',fit);window.removeEventListener('resize',fit);
+    if(session.restore){repaintStories();const strip=root.querySelector('.story-strip');if(strip)strip.scrollLeft=session.stripLeft;const openers=[...root.querySelectorAll('[data-story-author]')],opener=openers.find(el=>el.dataset.storyId===session.openerId)||openers.find(el=>el.dataset.storyAuthor===record.authorId);opener?.focus({preventScroll:true});window.scrollTo?.(session.scrollX,session.scrollY);}
+   });
+  }else{d.querySelector('#story-view-content').innerHTML=markup;d.setAttribute('aria-label','Historia de '+storyAuthor(record));}
+  storyViewer={id,featured,dialog:d};session.busy=false;
+  const move=step=>{if(session.busy||session.closed)return;const next=index+step;if(next<0||next>=list.length)return;session.busy=true;session.focusSelector=document.activeElement?.id;return openStory(list[next].id,featured,session);};session.move=move;
+  d.querySelector('#story-prev').onclick=()=>move(-1);d.querySelector('#story-next').onclick=()=>move(1);
+  d.querySelector('#story-tap-prev').onclick=()=>move(-1);d.querySelector('#story-tap-next').onclick=()=>move(1);
+  if(session.focusSelector==='story-prev'||session.focusSelector==='story-next'){const target=d.querySelector('#'+session.focusSelector);(target.disabled?d.querySelector(target.id==='story-prev'?'#story-next':'#story-prev'):target)?.focus({preventScroll:true});}
   const showError=e=>{d.querySelector('#story-view-error').textContent=e.message;};
   if(own){
    let changing=false;
-   d.querySelector('#feature-story').onclick=async()=>{if(changing)return;changing=true;try{await storyService.feature(id,!record.featured);d.close();await refreshStories();toast(record.featured?'Historia retirada de destacadas.':'Historia guardada en Destacadas de Mi perfil.');}catch(e){changing=false;showError(e);}};
-   d.querySelector('#delete-story').onclick=async()=>{if(changing)return;changing=true;try{await storyService.deleteOwn(id);d.close();await refreshStories();toast('Historia e imagen eliminadas de este navegador.');}catch(e){changing=false;showError(e);}};
+   d.querySelector('#feature-story').onclick=async()=>{if(changing||session.busy)return;changing=true;session.busy=true;try{await storyService.feature(id,!record.featured);await refreshStories({paint:false});d.close();toast(record.featured?'Historia retirada de destacadas.':'Historia guardada en Destacadas de Mi perfil.');}catch(e){changing=false;session.busy=false;showError(e);}};
+   d.querySelector('#delete-story').onclick=async()=>{if(changing||session.busy)return;changing=true;session.busy=true;try{await storyService.deleteOwn(id);await refreshStories({paint:false});d.close();toast('Historia e imagen eliminadas de este navegador.');}catch(e){changing=false;session.busy=false;showError(e);}};
   }else{
    let sent=false;
    d.querySelector('#story-reply').onsubmit=async e=>{
-    e.preventDefault();if(sent)return;const text=d.querySelector('#story-reply-text').value.trim();if(!text)return;
-    sent=true;d.querySelector('#story-reply-send').disabled=true;
+    e.preventDefault();if(sent||session.busy||session.closed)return;const text=d.querySelector('#story-reply-text').value.trim();if(!text)return;
+    sent=true;session.busy=true;d.querySelector('#story-reply-send').disabled=true;
     try{
      const reply=await storyService.reply(id,text,state.matches);
+     if(session.closed)return;
      if(!state.matches.includes(reply.authorId)||Date.now()>=record.expiresAt)throw new Error('Historia no disponible.');
      (state.messages[reply.authorId]??=[]).push(reply.message);
-     const saved=save();d.close();chatOrigin=page==='stories'?'stories':'profile';page='matches';activeChat=reply.authorId;render();focusMain();
+     const saved=save();session.restore=false;d.close();chatOrigin=page==='stories'?'stories':'profile';page='matches';activeChat=reply.authorId;render();focusMain();
      if(saved)toast('Respuesta guardada en la conversación local.');
-    }catch(e){sent=false;d.querySelector('#story-reply-send').disabled=false;showError(e);await refreshStories();}
+    }catch(e){sent=false;session.busy=false;d.querySelector('#story-reply-send').disabled=false;showError(e);await refreshStories();}
    };
   }
-  repaintStories();
- }catch(e){toast(e.message||'No se pudo abrir la historia.');}
+ }catch(e){session.busy=false;toast(e.message||'No se pudo abrir la historia.');}
 }
 async function resetStories(){
  ++storyOpenSequence;await storyService.reset();
