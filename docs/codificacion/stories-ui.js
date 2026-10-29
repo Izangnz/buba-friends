@@ -18,7 +18,7 @@ function storyButton(s,featured=false){return `<button type="button" class="stor
 function storiesConnectionsView(){
  const own=liveStories().find(s=>s.authorId==='self'),others=liveStories().filter(s=>s.authorId!=='self');
  const disabled=storyReady?'':'disabled';
- return `<section class="stories-section" aria-labelledby="stories-title"><h2 id="stories-title" class="section-title">Historias</h2><p class="stories-note">Ejemplos y publicaciones locales · 24 horas. El aro indica historias vistas, no lectura del chat.</p><div class="story-strip"><div class="story-own">${own?`<button type="button" class="story-item ${own.seenAt!==null?'seen':'unseen'}" data-story-id="${esc(own.id)}" data-story-featured="false"><span class="story-circle"><img src="${esc(storyURL(own))}" alt=""></span><span>Tu historia</span></button><button type="button" class="story-add" id="new-story" aria-label="Añadir una historia">+</button>`:`<button type="button" class="story-item" id="new-story" ${disabled}><span class="story-circle story-plus" aria-hidden="true">+</span><span>Tu historia</span></button>`}</div>${others.map(s=>storyButton(s)).join('')}${!others.length?'<p class="stories-empty">Las historias de ejemplo de tus coincidencias aparecerán aquí mientras estén activas.</p>':''}</div>${storyFailure?`<p class="form-error" role="status">${esc(storyFailure)} <button class="text-btn" id="retry-stories">Reintentar</button></p>`:!storyReady?'<p class="stories-note" role="status">Preparando historias locales…</p>':''}</section>`;
+ return `<section class="stories-section" aria-labelledby="stories-title"><h2 id="stories-title" class="section-title">Historias</h2><p class="stories-note">Ejemplos y publicaciones locales · 24 horas. El aro indica historias vistas, no lectura del chat.</p><div class="story-strip"><div class="story-own">${own?`<button type="button" class="story-item ${own.seenAt!==null?'seen':'unseen'}" data-story-id="${esc(own.id)}" data-story-featured="false"><span class="story-circle"><img src="${esc(storyURL(own))}" alt=""></span><span>Tu historia</span></button><button type="button" class="story-add" id="new-story" aria-label="Añadir una historia">+</button>`:`<button type="button" class="story-item" id="new-story" ${disabled}><span class="story-circle story-plus" aria-hidden="true">+</span><span>Tu historia</span></button>`}</div>${others.map(s=>storyButton(s)).join('')}${!others.length?'<p class="stories-empty">Aún no hay historias activas de tus conexiones. <button class="text-btn" data-nav="discover">Descubrir perfiles</button></p>':''}</div>${storyFailure?`<p class="form-error" role="status">${esc(storyFailure)} <button class="text-btn" id="retry-stories">Reintentar</button></p>`:!storyReady?'<p class="stories-note" role="status">Preparando historias locales…</p>':''}</section>`;
 }
 function storiesProfileView(){return `<section class="featured-section" aria-labelledby="featured-title"><h2 class="section-title" id="featured-title">Destacadas</h2><p class="stories-note">Tus historias guardadas aquí siguen disponibles después de 24 horas. Solo en este navegador.</p><div class="story-strip">${highlightedStories().map(s=>storyButton(s,true)).join('')||'<p class="stories-empty">Aún no tienes destacadas. Abre una historia propia para guardarla aquí.</p>'}</div></section>`;}
 function storyReferenceInner(ref){
@@ -27,7 +27,7 @@ function storyReferenceInner(ref){
 }
 function storyReference(ref){return ref?`<div class="story-reference" data-story-reference="${esc(ref.id)}">${storyReferenceInner(ref)}</div>`:'';}
 function repaintStories(){
- if((page==='matches'&&!activeChat)||(page==='profile'&&!editingProfile))render();
+ if(page==='stories'||(page==='profile'&&!editingProfile))render();
  else if(page==='matches'&&activeChat)root.querySelectorAll('[data-story-reference]').forEach(el=>{
   const ref=state.messages[activeChat]?.find(m=>m.story?.id===el.dataset.storyReference)?.story;if(ref)el.innerHTML=storyReferenceInner(ref);
  });
@@ -101,7 +101,7 @@ async function openStory(id,featured=false){
      const reply=await storyService.reply(id,text,state.matches);
      if(!state.matches.includes(reply.authorId)||Date.now()>=record.expiresAt)throw new Error('Historia no disponible.');
      (state.messages[reply.authorId]??=[]).push(reply.message);
-     const saved=save();d.close();page='matches';activeChat=reply.authorId;render();focusMain();
+     const saved=save();d.close();chatOrigin=page==='stories'?'stories':'profile';page='matches';activeChat=reply.authorId;render();focusMain();
      if(saved)toast('Respuesta guardada en la conversación local.');
     }catch(e){sent=false;d.querySelector('#story-reply-send').disabled=false;showError(e);await refreshStories();}
    };

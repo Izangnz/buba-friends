@@ -196,3 +196,7 @@ dialog h2{overflow-wrap:anywhere;padding-right:4px}
 .story-reference strong,.story-reference span{display:block}
 .story-reference span{font-style:italic;margin-top:5px;overflow-wrap:anywhere}
 @media(max-width:600px){.story-strip{gap:12px}.story-circle{width:70px;height:70px}.story-viewer,.story-composer{width:calc(100% - 20px)}.story-field{scroll-margin-block:80px 140px}.story-image{max-height:43svh}.story-viewer .panel-actions{gap:8px}.story-viewer .panel-actions .btn{padding-inline:16px}}
+
+/* Profile creation, optional music and four navigation destinations. */
+.music-row{display:grid;gap:12px;border:1px solid var(--line);border-radius:14px;padding:16px;margin:14px 0}.music-editor{margin:24px 0}.music-preview li{overflow-wrap:anywhere;margin:10px 0}.form select{width:100%;padding:13px;border:1px solid #A47C90;border-radius:9px;background:white;min-height:46px}.music-editor .btn{max-width:100%;white-space:normal}
+@media(max-width:600px){.nav button{flex:1;min-width:0;padding:9px 3px;font-size:11px}.nav{gap:2px}.music-row{padding:12px}.form input,.form textarea,.form select{font-size:16px;min-width:0;max-width:100%}}

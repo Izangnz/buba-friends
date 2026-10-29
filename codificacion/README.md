@@ -1,6 +1,6 @@
 # Buba Friends · candidata para el viernes 30 de octubre de 2026
 
-Demo local para adultos, con 30 personajes ficticios, ilustraciones originales, coincidencias programadas y mensajes locales. Sin cuentas reales, respuestas automáticas, servidor de producto, pagos ni Spotify. Web publicada: **https://izangnz.github.io/buba-friends/**.
+Demo local para adultos, con 30 personajes ficticios, ilustraciones originales, coincidencias programadas y mensajes locales. Sin cuentas reales, respuestas automáticas, servidor de producto ni pagos. Música escrita a mano y enlaces opcionales a Spotify, sin conexión de cuentas. Web publicada: **https://izangnz.github.io/buba-friends/**.
 
 ## Vista previa
 
@@ -55,7 +55,7 @@ Para actualizaciones posteriores: editar fuentes, ejecutar `node codificacion/te
 
 ## Recorrido de presentación de tres minutos
 
-1. **0:00–0:30.** Abrir la vista aislada. Mostrar el aviso de simulación, confirmar +18 y pulsar Empezar. Elegir Mujeres, Hombres o Ambos, sin selección automática.
+1. **0:00–0:30.** Abrir la vista aislada, confirmar +18 y pulsar Crear mi perfil. Escribir nombre y seleccionar edad 18–100; guardar y continuar. Elegir Mujeres, Hombres o Ambos, sin selección automática.
 2. **0:30–1:10.** Mostrar la tarjeta y su información; cerrar con ×. Explicar los tres controles. Con Mujeres o Ambos, el primer perfil es Vega y genera coincidencia al mostrar interés. Con Hombres, Leo no coincide; el siguiente, Nico, sí. No todos los intereses producen coincidencia.
 3. **1:10–1:55.** Abrir “Escribir un hola” desde la coincidencia simulada. Elegir una sugerencia, modificarla y enviarla manualmente. Aclarar que nadie recibe ni responde mensajes: es chat local.
 4. **1:55–2:25.** Ir a Mi perfil → Editar mi perfil → cambiar un campo → Guardar. Mostrar la vista previa guardada.
@@ -115,7 +115,7 @@ Recuperación de este acabado: `backups/antes-portada-bienvenida-20261028.zip` y
 
 ## Historias locales · bloque autorizado para publicar
 
-Conexiones incluye Historias encima de las conversaciones: Tu historia con + y las historias activas de coincidencias. Todas las coincidencias siguen accesibles en su fila y conversación, tengan o no historia. El aro rosa indica historia sin ver; el aro discontinuo indica vista y no es una confirmación de lectura del chat.
+En la versión anterior, Conexiones incluía Historias encima de las conversaciones; desde el 29/10 están en su pestaña independiente: Tu historia con + y las historias activas de coincidencias. Todas las coincidencias siguen accesibles en su fila y conversación, tengan o no historia. El aro rosa indica historia sin ver; el aro discontinuo indica vista y no es una confirmación de lectura del chat.
 
 Crear: + → imagen JPEG/PNG/WebP hasta 8 MB → previsualizar → texto opcional hasta 180 caracteres → Publicar en la demo. El aviso «Solo se guarda en este navegador» está junto al botón. Se verifica la firma del archivo, se decodifica y convierte a JPEG de hasta 1280 px, calidad 82; imágenes mayores de 40 megapíxeles se rechazan. Cancelar no guarda nada y libera la vista previa.
 
@@ -145,3 +145,22 @@ Recuperación: `backups/antes-historias-publicacion-20261028.zip` y `backups/des
 - Despliegue inicial verificado: https://github.com/Izangnz/buba-friends/actions/runs/40783351650.
 
 Las pruebas de lógica y reloj y la verificación pública de recursos no equivalen a una revisión visual del navegador. Se mantiene la lista pendiente de iPhone anterior.
+
+
+## Perfil obligatorio, música y pestaña Historias · 29/10/2026
+
+Recorrido nuevo: bienvenida +18 → Crear mi perfil → elegir a quién descubrir → Descubrir. Nombre y edad empiezan vacíos y son obligatorios; selector 18–100 y validación JS. Bio, intereses y música son opcionales y vacíos. El avatar propio es un icono neutro. La navegación se protege durante la creación. Guardar correctamente persiste una marca explícita `profileCompleted`; si el almacenamiento falla, no permite terminar el alta.
+
+Migración en la misma clave `buba-friends-v1`: el Alex exactamente intacto vuelve al perfil vacío, conservando coincidencias, decisiones y mensajes. Un perfil personalizado válido se conserva. Si algún campo coincide con los antiguos ejemplos, se conservan todos sus datos y se solicita confirmación o edición mediante Guardar y continuar. No se escribe al arrancar ni se cambia IndexedDB durante la migración. Campos personales antiguos desconocidos se conservan.
+
+Mi música permite cinco artistas y tres canciones con título y artista. Se añaden y eliminan filas; los campos se editan directamente y se guardan con el perfil. Cada enlace opcional se valida con URL: HTTPS, host exacto `open.spotify.com`, sin credenciales ni puerto no estándar, ruta `/artist/` o `/track/` y un identificador de 22 caracteres alfanuméricos. Nombres escapados al mostrar; sin HTML, búsquedas, reproducción, SDK ni sincronización de Spotify. La vista previa propia y el detalle de perfiles muestran música si existe. No se han añadido preferencias a los 30 personajes existentes.
+
+Cuatro destinos en móvil y escritorio: Descubrir, Conexiones, Historias y Mi perfil. Historias reutiliza visor, blobs, fechas y ejemplos persistidos. Solo incluye historias propias y de coincidencias. Conexiones conserva chats y coincidencias; Mi perfil conserva destacadas. Responder abre el chat correcto una sola vez y Volver lleva a Historias. No se han modificado el repositorio de historias ni las fechas de caducidad.
+
+Pruebas simuladas ejecutadas: recorridos Mujeres/Hombres/Ambos con coincidencia/chat/recarga; alta obligatoria, bloqueo de acceso a otras pestañas, edades y espacios, migraciones intacta/personalizada/ambigua y almacenamiento bloqueado; controles de música añadir/editar/eliminar, máximos 5/3, persistencia, escape HTML y dominios engañosos; historias propias y de coincidencias, respuestas sin duplicar, caducidad exacta 24 horas, referencias no disponibles, destacadas, borrado y reinicio. Estas pruebas usan DOM, almacenamiento, reloj y decodificación simulados.
+
+Revisión visual real pendiente a 375/390 px y escritorio: el inventario de navegador informa `The browser access host is unavailable`. No se ha repetido el intento de controlar Safari. Las cuatro pestañas usan flex con ancho mínimo cero; esto es una comprobación del CSS, no evidencia visual de ausencia de desbordamiento. Pendiente en iPhone: distribución, teclado, selector de archivos, IndexedDB, modo pantalla de inicio y navegación táctil.
+
+Para probar el nuevo inicio sin borrar datos: abrir la URL pública en una ventana privada o utilizar la vista local en otro puerto. No pulsar Reiniciar en el contexto que contenga los datos que se quieran conservar. Perfil y música se guardan en localStorage; metadatos e imágenes de historias en IndexedDB, en ese navegador y origen. No hay registro ni servidor de usuarios.
+
+Recuperación anterior: etiqueta Git local `recuperacion-antes-perfil-musica-historias-20261029`, sobre `6dae5f4`. El commit final conserva el historial y sirve como recuperación posterior. Los parámetros de versión de CSS/JS en index.html evitan reutilizar esos recursos antiguos al cargar la entrada actualizada.

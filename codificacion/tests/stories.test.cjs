@@ -83,7 +83,7 @@ module.exports=async function runStoriesTests(){
   Blob,Date:{now:()=>now},URL:{createObjectURL:()=>`blob:test-${++counter}`,revokeObjectURL:url=>revoked.push(url)},
   BubaStories:{...api,createRepository:()=>uiRepo,createService:options=>api.createService({...options,clock:()=>now,idFactory:()=>String(++counter)}),optimizeImage:async()=>jpeg},
   state:{started:true,me:{name:'Demo'},matches:['vega','nico'],messages:{vega:[],nico:[]}},
-  page:'matches',activeChat:null,editingProfile:false,
+  chatOrigin:'matches',page:'stories',activeChat:null,editingProfile:false,
   profiles:[{id:'vega',name:'Vega'},{id:'nico',name:'Nico'},{id:'alma',name:'Alma'}],
   esc:s=>String(s).replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'),
   document:{addEventListener(){}},window:{addEventListener(){}},root:{querySelector(){return null;},querySelectorAll(){return [];}},

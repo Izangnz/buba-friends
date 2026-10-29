@@ -10,7 +10,7 @@ function harness(saved, {failSave = false} = {}) {
   let html = '', nodes = {}, lastDialog, clock = 1000;
   const classList = () => ({add(){}, remove(){}});
   const element = () => ({
-    value:'', disabled:false, isConnected:true, style:{}, classList:classList(),
+    elements:{name:{value:''},age:{value:''}},addEventListener(){},querySelectorAll(){return [];},value:'', disabled:false, isConnected:true, style:{}, classList:classList(),
     clientWidth:358, scrollHeight:200, scrollTop:0,
     focus(){document.activeElement=this;}, setAttribute(){},
     remove(){this.isConnected=false;}, scrollIntoView(){},
@@ -83,13 +83,13 @@ function harness(saved, {failSave = false} = {}) {
     *[Symbol.iterator](){yield* Object.entries(this.data);}
   }
   const context=vm.createContext({document,localStorage:{getItem:k=>store[k]||null,setItem:(k,v)=>{if(failSave)throw Error('blocked');store[k]=v;}},
-    window:{scrollTo(){}},setTimeout(){},Date:{now:()=>clock},FormData});
+    URL,window:{scrollTo(){}},setTimeout(){},Date:{now:()=>clock},FormData});
   vm.runInContext(source,context);
   return {
     run:code=>vm.runInContext(code,context),node:s=>nodes[s]||query(s),get dialog(){return lastDialog;},store,
     tick(ms=400){clock+=ms;},
     choose(choice){const b=nodes['[data-preference]:'+choice];assert.ok(b);b.onclick();},
-    start(choice='both'){this.node('#adult').onchange({target:{checked:true}});this.node('#start').onclick();this.choose(choice);},
+    start(choice='both'){this.node('#adult').onchange({target:{checked:true}});this.node('#start').onclick();this.submit('#profile-form',{name:'Demo',age:'30',bio:'',interests:''});if(!failSave)this.choose(choice);},
     submit(selector,data){const form=this.node(selector);form.data=data;form.onsubmit({preventDefault(){},target:form});},
     apply(data){const form=lastDialog.querySelector('#filters');form.data=data;form.onsubmit({preventDefault(){}});},
   };
@@ -103,7 +103,8 @@ for(const choice of ['women','men','both']){
   h.node('#adult').onchange({target:{checked:true}});h.node('#start').onclick();
   assert.equal(h.run('state.preference'),null);
   assert.doesNotMatch(h.run('content()'),/id="swipe-card"/);
-  h.choose(choice);
+  assert.equal(h.run('page'),'setup');h.run("go('matches')");assert.equal(h.run('page'),'setup');
+  h.submit('#profile-form',{name:'Demo',age:'30',bio:'',interests:''});h.choose(choice);
   let attempts=0;
   while(!h.run('state.matches.length')&&attempts<3){h.tick();h.node('#like').onclick();attempts++;}
   assert.equal(h.run('state.matches.length'),1,`${choice}: easy simulated match`);
@@ -139,7 +140,7 @@ for(const age of ['17','101','25.5','', '1e2','Infinity','abc'])assert.equal(h.r
 for(const age of [18,100])assert.equal(h.run('parseAge('+age+')'),age);
 
 // Full filters lifecycle, including real dialog handlers (with DOM doubles).
-h.run("state=fresh();state.started=true;state.preference='both';page='discover';render()");
+h.run("state=fresh();state.started=true;state.profileCompleted=true;state.me.name='Demo';state.me.age=30;state.preference='both';page='discover';render()");
 h.node('#open-filters').onclick();
 h.dialog.querySelector('#age-min').value='28';h.dialog.querySelector('#age-max').value='28';
 h.dialog.querySelector('.dialog-close').onclick();
@@ -169,7 +170,7 @@ assert.ok(h.node('#undo'),'Undo must remain reachable on an empty result set');h
 console.log('Catálogo, 18–100, filtros aplicar/cancelar/limpiar/validar, persistencia y deshacer en vacío: correctos.');
 
 // Decisions, details, duplicates, simulation labels and messages stay consistent.
-h.run("state=fresh();state.started=true;state.preference='both';page='discover';render()");h.tick();
+h.run("state=fresh();state.started=true;state.profileCompleted=true;state.me.name='Demo';state.me.age=30;state.preference='both';page='discover';render()");h.tick();
 const beforeDetail=h.run('current().id');h.node('#detail').onclick();assert.match(h.dialog.innerHTML,/Mi plan favorito/);
 assert.match(h.dialog.innerHTML,/Qué busco/);assert.match(h.dialog.innerHTML,/Para romper el hielo/);
 h.dialog.querySelector('.dialog-close').onclick();assert.equal(h.run('current().id'),beforeDetail);
@@ -200,13 +201,13 @@ const old=harness({started:true,decisions:['vega','unknown'],matches:['vega'],me
 assert.equal(old.run('state.preference'),null);assert.equal(old.run('state.messages.vega[0].text'),'Mensaje anterior');
 assert.equal(old.run('state.filters.interest'),'Música en directo');assert.equal(old.run('state.me.age'),31);
 const originalStored=old.store['buba-friends-v1'];old.run('render()');assert.equal(old.store['buba-friends-v1'],originalStored);
-const malformed=harness({started:true,me:{age:17},filters:{min:100,max:18}});assert.equal(malformed.run('state.me.age'),25);assert.equal(malformed.run('state.filters.min'),18);
-const failedSave=harness(null,{failSave:true});failedSave.start();assert.equal(failedSave.run('state.preference'),'both');assert.equal(Object.keys(failedSave.store).length,0);
+const malformed=harness({started:true,me:{age:17},filters:{min:100,max:18}});assert.equal(malformed.run('state.me.age'),'');assert.equal(malformed.run('state.filters.min'),18);
+const failedSave=harness(null,{failSave:true});failedSave.start();assert.equal(failedSave.run('state.preference'),null);assert.equal(Object.keys(failedSave.store).length,0);
 
 h.run("go('profile')");
-for(const data of [{name:'A',age:'31',bio:'Texto',interests:'Café'},{name:'Demo',age:'17',bio:'Texto',interests:'Café'},
+for(const data of [{name:'   ',age:'31',bio:'Texto',interests:'Café'},{name:'Demo',age:'17',bio:'Texto',interests:'Café'},
   {name:'Demo',age:'31',bio:'x'.repeat(351),interests:'Café'},{name:'Demo',age:'31',bio:'Texto',interests:'x'.repeat(151)}]){
-  h.submit('#profile-form',data);assert.equal(h.run('state.me.name'),'Alex');
+  h.submit('#profile-form',data);assert.equal(h.run('state.me.name'),'Demo');
 }
 h.node('#reset').onclick();h.dialog.querySelector('#cancel').onclick();assert.equal(h.run('state.started'),true);
 h.node('#reset').onclick();h.dialog.querySelector('#confirm-reset').onclick();
@@ -221,3 +222,42 @@ assert.equal(withStory.run('state.messages.vega[0].story.id'),'example-vega-v1')
 assert.equal(withStory.run('state.messages.vega[0].story.caption'),'Texto original');
 assert.equal(withStory.run("'image' in state.messages.vega[0].story"),false);
 console.log('Referencias de historias compatibles con el guardado v1, sin copiar imágenes al chat.');
+
+// New onboarding/migration constraints, using isolated local storage only.
+const legacy={name:'Alex',age:25,bio:'Me gustan los planes sencillos y conocer gente con curiosidad.',interests:'Café, música, paseos'};
+const example=harness({started:true,me:legacy,matches:['vega'],messages:{vega:[{mine:true,text:'Conservar'}]}});
+assert.equal(example.run('page'),'setup');assert.equal(example.run('state.me.name'),'');assert.equal(example.run('state.me.age'),'');assert.equal(example.run('state.messages.vega[0].text'),'Conservar');
+const ambiguous=harness({started:true,me:{...legacy,name:'Mi nombre'}});
+assert.equal(ambiguous.run('state.profileReview'),true);assert.equal(ambiguous.run('state.me.name'),'Mi nombre');assert.equal(ambiguous.run('state.me.bio'),legacy.bio);
+assert.equal(old.run('state.profileCompleted'),true);
+const freshTest=harness();assert.equal(freshTest.run('state.me.name'),'');assert.equal(freshTest.run('state.me.age'),'');assert.equal(freshTest.run('state.me.music.artists.length'),0);
+freshTest.node('#adult').onchange({target:{checked:true}});freshTest.node('#start').onclick();
+for(const age of ['',17,101,'18.5','2e1']){freshTest.submit('#profile-form',{name:'Demo',age,bio:'',interests:''});assert.equal(freshTest.run('state.profileCompleted'),false);}
+freshTest.submit('#profile-form',{name:'   ',age:18,bio:'',interests:''});assert.equal(freshTest.run('state.profileCompleted'),false);
+freshTest.submit('#profile-form',{name:'D',age:100,bio:'',interests:''});assert.equal(freshTest.run('state.profileCompleted'),true);
+for(const kind of ['artists','songs']){const route=kind==='artists'?'artist':'track';const valid='https://open.spotify.com/'+route+'/'+'a'.repeat(22);assert.equal(freshTest.run(`spotifyURL(${JSON.stringify(valid)},'${kind}')`),valid);for(const bad of ['http://open.spotify.com/'+route+'/'+'a'.repeat(22),'https://open.spotify.com.evil.test/'+route+'/'+'a'.repeat(22),'https://evil.test/track/'+'a'.repeat(22),'javascript:alert(1)','https://open.spotify.com/album/'+'a'.repeat(22)])assert.throws(()=>freshTest.run(`spotifyURL(${JSON.stringify(bad)},'${kind}')`));}
+freshTest.run("state.preference='both';go('stories')");assert.equal(freshTest.run('page'),'stories');assert.doesNotMatch(freshTest.run("page='matches';content()"),/stories-section/);
+console.log('Nuevo inicio obligatorio, migraciones intacta/personalizada/ambigua, edades límite, cuatro destinos y validación Spotify: correctos.');
+module.exports={harness};
+
+// Music CRUD handlers with editable row/list DOM doubles (no browser or user storage).
+const music=harness();music.start();music.run("go('profile')");music.node('#edit-profile').onclick();
+const form=music.node('#profile-form'),lists={artists:[],songs:[]},buttons={};
+function row(kind,item){const fields={'[data-music-name]':{value:item.name||''},'[data-music-artist]':{value:item.artist||''},'[data-music-url]':{value:item.url||''}};const r={querySelector:s=>fields[s]||fields['[data-music-name]'],remove(){lists[kind].splice(lists[kind].indexOf(r),1);}};for(const f of Object.values(fields))f.focus=()=>{};r.button={closest:()=>r};return r;}
+for(const kind of ['artists','songs'])buttons[kind]={dataset:{addMusic:kind},disabled:false};
+form.elements={name:{value:'Demo'},age:{value:'30'}};
+form.querySelectorAll=s=>s==='[data-add-music]'?Object.values(buttons):s==='[data-remove-music]'?Object.values(lists).flat().map(r=>r.button):lists[s.includes('artists')?'artists':'songs'];
+form.querySelector=s=>s==='[data-save-profile]'?{}:{get children(){return lists[s.includes('artists')?'artists':'songs'];},get lastElementChild(){return this.children.at(-1);},insertAdjacentHTML(){const kind=s.includes('artists')?'artists':'songs';lists[kind].push(row(kind,{}));}};
+music.run('bindMusic()');
+buttons.artists.onclick();assert.equal(lists.artists.length,1);lists.artists[0].querySelector('[data-music-name]').value='<Artista & prueba>';
+buttons.songs.onclick();lists.songs[0].querySelector('[data-music-name]').value='Canción';lists.songs[0].querySelector('[data-music-artist]').value='Intérprete';
+const data={name:'Demo',age:'30',bio:'',interests:''};music.submit('#profile-form',data);
+assert.equal(music.run('state.me.music.artists[0].name'),'<Artista & prueba>');assert.match(music.run('ownPreview()'),/&lt;Artista &amp; prueba&gt;/);
+const reloadMusic=harness(JSON.parse(music.store['buba-friends-v1']));assert.equal(reloadMusic.run('state.me.music.songs[0].artist'),'Intérprete');
+lists.artists[0].querySelector('[data-music-name]').value='Editado';form.data=data;form.onsubmit({preventDefault(){},target:form});assert.equal(music.run('state.me.music.artists[0].name'),'Editado');
+lists.artists[0].button.onclick();assert.equal(lists.artists.length,0);form.onsubmit({preventDefault(){},target:form});assert.equal(music.run('state.me.music.artists.length'),0);
+for(let i=0;i<6;i++)buttons.artists.onclick();assert.equal(lists.artists.length,5);assert.equal(buttons.artists.disabled,true);
+for(let i=0;i<4;i++)buttons.songs.onclick();assert.equal(lists.songs.length,3);assert.equal(buttons.songs.disabled,true);
+const musicForm={querySelectorAll:s=>s.includes('artists')?[row('artists',{name:'Artista',url:'https://open.spotify.com.evil.test/artist/'+ 'a'.repeat(22)})]:[]};
+form.querySelectorAll=musicForm.querySelectorAll;form.onsubmit({preventDefault(){},target:form});assert.equal(music.run('state.me.music.artists.length'),0);
+console.log('Música: controles añadir/editar/eliminar, límites 5/3, escape HTML, guardado y recarga simulados correctos.');
