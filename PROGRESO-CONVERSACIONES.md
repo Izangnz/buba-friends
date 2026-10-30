@@ -26,3 +26,11 @@ Acabado final del compositor: no se recorta el contenedor de envío; textarea aj
 Vista previa arrancada: http://127.0.0.1:4177/buba-friends/. Guía completa y recorrido de cinco minutos en codificacion/README.md. Ninguna conversación de prueba se inyectó en el guardado del usuario. Las destacadas ajenas no existen en el catálogo actual; las propias siguen sin permitir respuesta.
 
 Siguiente paso exacto: abrir la vista conjunta a 375/390 px y escritorio, recorrer la guía con datos de ensayo y revisar Safari/iPhone con teclado, orientación, áreas seguras, scroll interno, Tab/foco y portapapeles. Corregir hallazgos visuales antes de aprobar cualquier publicación. No hay funciones disponibles del alcance aplazadas; queda la validación manual indicada.
+
+## Publicación autorizada · 31/10/2026
+
+El usuario revisó la candidata y autorizó expresamente integrarla y publicarla para probar en móvil. Se verificó árbol limpio, origin/main actualizado y ascendencia de la candidata completa (incluye 82e0ac2 y ambas etapas de perfil). Recuperación pública anterior: recuperacion-publica-antes-conversaciones-20261030, sobre 86f2f0203525748405d092e74b374326df765931. Integración en main mediante fast-forward, sin perder historial ni trabajo pendiente.
+
+Candidata funcional c89fb772b6302f1e377b2ee013ccd174db40c7c6 enviada al repositorio existente Izangnz/buba-friends. Se repitieron ocho baterías simuladas y sintaxis, regeneración de docs/ y HTTP real de 79 archivos en raíz y subruta. No se leyó, reinició ni borró almacenamiento del navegador. Compatibilidad de perfiles anteriores, migración de foto, Historias/colecciones y mensajes/borradores comprobada con almacenamiento aislado; Safari/iPhone real sigue pendiente.
+
+Versión pública: 20261030-5. Se comprobará el despliegue del commit final y la igualdad byte a byte de los recursos servidos con docs/ antes de entregar. Siguiente paso exacto: confirmar Pages completado con éxito y todos los recursos públicos; después realizar el recorrido de iPhone documentado, sin reiniciar datos existentes.

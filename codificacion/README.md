@@ -372,3 +372,11 @@ Persistencia: se mantiene `buba-friends-v1`. Los mensajes reciben IDs estables y
 5. Historias → historia de Vega → responder. Debe abrir el mismo chat e identificar la historia. La caducidad exacta de 24 h está probada con reloj simulado; comprobarla manualmente exige esperar a la fecha real, sin cambiar el reloj ni los datos personales. Revisar también Mi perfil/Ver mi perfil, fotos, Descubrir y Destacadas.
 
 La vista previa sirve una instantánea de `docs/`; reiniciarla tras regenerar. Mantener esta candidata sin publicar hasta completar la revisión.
+
+## Publicación autorizada de la candidata conjunta · 31/10/2026
+
+Tras revisión del usuario, la candidata conjunta de perfil y conversaciones se integró en main conservando el historial y se autorizó su publicación en el repositorio existente. Las restricciones de «no publicar» de las secciones anteriores describen la etapa de candidata y quedan superadas por esta autorización.
+
+Versión: **20261030-5**. Enlace para móvil: **https://izangnz.github.io/buba-friends/?v=20261030-5**. El parámetro identifica la revisión y no cambia el origen ni las claves de almacenamiento. No se ejecutó ningún reinicio ni se accedió a los datos personales del navegador. La foto anterior se recupera como principal, los perfiles creados mantienen su acceso y los mensajes antiguos reciben IDs sin fechas inventadas; Historias y colecciones mantienen su base y blobs. Las compatibilidades se comprobaron con datos aislados, no con el almacenamiento personal ni con Safari real.
+
+Punto de recuperación público anterior: `recuperacion-publica-antes-conversaciones-20261030` sobre `86f2f02`. Código completo revisado: `c89fb77`; el commit de publicación añade este registro. La entrega final debe confirmar el despliegue y los recursos públicos. Queda pendiente la revisión real en iPhone: abrir el enlace, comprobar el perfil existente sin repetir creación, añadir/ordenar fotos de ensayo si se desea, abrir dos conexiones y alternar borradores, enviar/citar un mensaje y abrir/cerrar el perfil; comprobar campo y botón con teclado, scroll y regreso desde Historias. No reiniciar datos para hacer estas pruebas.
