@@ -49,11 +49,13 @@ console.log('UI de conversaciones: búsqueda, borradores separados, envío/cita/
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const source=fs.readFileSync(path.join(__dirname,'../app.js'),'utf8');
 const values={},classes=new Set();const classList={add:n=>classes.add(n),remove:n=>classes.delete(n)};
-const geometry=vm.createContext({page:'matches',activeChat:'vega',root:{querySelector:()=>null},window:{innerHeight:844,visualViewport:{height:420,offsetTop:22}},document:{body:{classList},documentElement:{classList,style:{setProperty:(k,v)=>values[k]=v}}}});
+const geometry=vm.createContext({page:'matches',activeChat:'vega',root:{querySelector:()=>null},updateComposer(){},window:{innerHeight:844,visualViewport:{height:420,offsetTop:22}},document:{body:{classList},documentElement:{classList,style:{setProperty:(k,v)=>values[k]=v}}}});
 vm.runInContext(source.slice(source.indexOf('function updateChatViewport('),source.indexOf('function bindConversations(')),geometry);vm.runInContext('updateChatViewport()',geometry);assert.equal(values['--chat-height'],'420px');assert.equal(values['--chat-top'],'22px');assert.equal(classes.has('chat-screen'),true);
 geometry.page='discover';vm.runInContext('updateChatViewport()',geometry);assert.equal(classes.has('chat-screen'),false);
 module.exports=async function(){const copy=harness(seed);copy.run("openConversation('vega')");await copy.node('[data-copy-message]:legacy-vega-1').onclick();assert.equal(copy.dialog.querySelector('#copy-message-text').value,'Respuesta anterior');
  // Sending at the bottom follows the user's own new message, unlike the old-reading case above.
 const bottom=harness(seed);bottom.run("openConversation('vega')");bottom.node('.messages').clientHeight=200;bottom.node('.messages').scrollHeight=500;bottom.node('.messages').scrollTop=300;bottom.submit('#send',{message:'Al final'});assert.equal(bottom.run('chatNewMessage'),false);assert.equal(bottom.run("chatSettings('vega').scrollTop"),null);
 const freshIds=harness({...seed,messages:{vega:[{mine:true,text:'A',id:'same'},{mine:true,text:'B',id:'same'}]}});assert.equal(freshIds.run('new Set(state.messages.vega.map(m=>m.id)).size'),2);
-console.log('Copia alternativa, envío al final, IDs duplicados y viewport visual: PASS (simulaciones).');};
+const timeline=harness({...seed,messages:{vega:[{mine:true,text:'Primero',createdAt:1000}],nico:[{mine:true,text:'Después',createdAt:2000}]}});assert.equal(timeline.run('conversationIds()[0]'),'nico');timeline.tick(5000);timeline.run("appendChatMessage('vega',newChatMessage('Ahora'))");assert.equal(timeline.run('conversationIds()[0]'),'vega');
+const scrollReload=harness(seed);scrollReload.run("openConversation('vega')");scrollReload.node('.messages').scrollTop=88;scrollReload.node('.messages').onscroll();scrollReload.run("go('matches')");assert.equal(harness(JSON.parse(scrollReload.store['buba-friends-v1'])).run("chatSettings('vega').scrollTop"),88);
+console.log('Copia alternativa, envío al final, IDs duplicados, orden por fechas, scroll persistente y viewport visual: PASS (simulaciones).');};

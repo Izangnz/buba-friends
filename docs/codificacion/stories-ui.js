@@ -32,7 +32,7 @@ function storiesConnectionsView(){
 }
 function storiesProfileView(){return collectionProfileView();}
 function storyReferenceInner(ref){
- const available=storyRecords.some(s=>s.id===ref.id&&s.authorId===ref.authorId&&storyAPI.active(s,Date.now()));
+ const available=storyRecords.some(s=>s.id===ref.id&&s.authorId===ref.authorId&&(storyAPI.active(s,Date.now())||s.featured===true));
  return `<strong>${available?'Respuesta a historia de '+esc(profiles.find(p=>p.id===ref.authorId)?.name||'perfil ficticio'):'Historia no disponible'}</strong>${ref.caption?`<span>${esc(ref.caption)}</span>`:''}`;
 }
 function storyReference(ref){return ref?`<div class="story-reference" data-story-reference="${esc(ref.id)}">${storyReferenceInner(ref)}</div>`:'';}
@@ -140,9 +140,8 @@ async function openStory(id,featured=false,session=null){
     try{
      const reply=await storyService.reply(id,text,state.matches);
      if(session.closed)return;
-     if(!state.matches.includes(reply.authorId)||Date.now()>=record.expiresAt)throw new Error('Historia no disponible.');
-     (state.messages[reply.authorId]??=[]).push(reply.message);
-     const saved=save();session.restore=false;d.close();chatOrigin=page==='stories'?'stories':'profile';page='matches';activeChat=reply.authorId;render();focusMain();
+     if(!state.matches.includes(reply.authorId)||(Date.now()>=record.expiresAt&&!record.featured))throw new Error('Historia no disponible.');
+     const saved=appendChatMessage(reply.authorId,reply.message);if(!saved)throw new Error('No se pudo guardar la respuesta. El texto sigue aquí; vuelve a intentarlo.');session.restore=false;d.close();chatOrigin=page==='stories'?'stories':'profile';page='matches';activeChat=reply.authorId;render();focusMain();
      if(saved)toast('Respuesta guardada en la conversación local.');
     }catch(e){sent=false;session.busy=false;d.querySelector('#story-reply-send').disabled=false;showError(e);await refreshStories();}
    };

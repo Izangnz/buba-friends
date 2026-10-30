@@ -7,7 +7,9 @@ Base: candidata/perfil-personal-20261030, commit 82e0ac2, árbol limpio. Nueva r
 - [x] Conexiones: búsqueda, nuevas/conversaciones/archivadas, actividad y vacíos.
 - [x] Chat: composición, respuesta/copia/borrado, controles y scroll/foco.
 - [x] Historias: referencias, caducidad y guardado sin duplicados.
-- [ ] Pruebas/regresiones, intento visual, paquete, vista previa y guía.
+- [x] Ocho baterías de lógica/regresiones, intento de acceso a navegador y paquete HTTP verificado.
+- [x] Vista previa y guía conjunta de cinco minutos.
+- [ ] Revisión visual/manual real de móvil, escritorio e iPhone (herramienta indisponible).
 
 Prueba de modelo completada mediante DOM/almacenamiento aislados: IDs estables sin escribir al arrancar, conservación de campos antiguos y ausencia de fechas inventadas; borradores separados, archivo/recuperación, actividad, eliminación/vaciado y rollback ante error. Regresiones de interacción existentes incluidas al cargar el harness.
 
@@ -17,4 +19,10 @@ Pruebas adicionales: ocho baterías PASS (interacción, conversaciones, perfil p
 
 Revisión visual intentada: inventario de herramientas sin navegadores, error «The browser access host is unavailable». No se afirma diseño móvil verificado. Pendientes manuales: 375/390 px, escritorio, Safari/iPhone con teclado, tacto, scroll, Tab y foco, portapapeles real.
 
-Siguiente paso exacto: revisar conservación del catálogo y controladores de Descubrir, guardar el commit de interfaz/Historias y regenerar/verificar el paquete publicable.
+Conservación verificada byte a byte: catálogo, controlador de gestos/disposición de Descubrir, profile-photo.js y reglas CSS anteriores. Commits de etapa: 9f4ec7f y fa83717. Paquete 20261030-5 regenerado con 79 archivos: HTTP real correcto en raíz y /buba-friends/, fuentes/copias idénticas.
+
+Acabado final del compositor: no se recorta el contenedor de envío; textarea ajustada a la altura útil, citas limitadas a dos líneas y textos secundarios compactados por debajo de 460 px de viewport. Comprobado solo con lógica/fixtures; sigue pendiente teclado real.
+
+Vista previa arrancada: http://127.0.0.1:4177/buba-friends/. Guía completa y recorrido de cinco minutos en codificacion/README.md. Ninguna conversación de prueba se inyectó en el guardado del usuario. Las destacadas ajenas no existen en el catálogo actual; las propias siguen sin permitir respuesta.
+
+Siguiente paso exacto: abrir la vista conjunta a 375/390 px y escritorio, recorrer la guía con datos de ensayo y revisar Safari/iPhone con teclado, orientación, áreas seguras, scroll interno, Tab/foco y portapapeles. Corregir hallazgos visuales antes de aprobar cualquier publicación. No hay funciones disponibles del alcance aplazadas; queda la validación manual indicada.

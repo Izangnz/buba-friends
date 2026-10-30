@@ -317,3 +317,8 @@ dialog.story-viewer::backdrop{background:#08060bf2;backdrop-filter:blur(8px)}
 }
 .chat .messages{position:relative}.message-actions summary{min-height:44px}.message-actions summary:focus-visible{outline:2px solid currentColor;outline-offset:2px}
 #copy-message-text{display:block;width:100%;min-height:120px;max-height:45dvh;font-size:16px;overflow-wrap:anywhere}
+/* El compositor completo permanece visible; se compacta con poca altura útil. */
+.chat-compose{max-height:none;overflow:visible}
+.reply-preview small{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.chat-tight .chat-local-note,.chat-tight .suggestions{display:none}
+.chat-tight .reply-preview{padding-block:6px}

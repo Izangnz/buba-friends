@@ -117,9 +117,9 @@ function createService({repository,clock=()=>Date.now(),idFactory=()=>global.cry
   reset(){return run(()=>undefined,{reset:true});},
   async reply(id,text,matches){
    const story=await this.get(id);
-   if(!story||story.authorId==='self'||!matches.includes(story.authorId)||!active(story,clock()))throw error('Esta historia ya no está disponible para responder.');
+   if(!story||story.authorId==='self'||!matches.includes(story.authorId)||!(active(story,clock())||story.featured===true))throw error('Esta historia ya no está disponible para responder.');
    const clean=String(text||'').trim();if(!clean||clean.length>1000)throw error('Escribe una respuesta de entre 1 y 1000 caracteres.');
-   return {authorId:story.authorId,message:{mine:true,text:clean,story:{id:story.id,authorId:story.authorId,caption:story.caption}}};
+   return {authorId:story.authorId,message:{id:'story-reply-'+idFactory(),mine:true,createdAt:clock(),text:clean,story:{id:story.id,authorId:story.authorId,caption:story.caption}}};
   },
  };
 }
