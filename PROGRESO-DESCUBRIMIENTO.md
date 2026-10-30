@@ -5,7 +5,8 @@ Base main c01ed5a, estado inicial limpio. Rama mejora/descubrimiento-20261031. R
 - [x] Inspección y recuperación.
 - [x] Modelo puro compatible: filtros por categorías, intereses OR, intención conservadora, normalización y orden estable.
 - [x] Tarjetas/Explorar persistentes, Guardados privados, detalle con acciones, estados e impedimento de intereses repetidos.
-- [ ] Pruebas/regresiones, intento visual, paquete y documentación.
+- [x] Once baterías/sintaxis PASS, intento visual bloqueado, paquete HTTP de 82 archivos y guía de cinco minutos.
+- [ ] Revisión visual y táctil real en iPhone/escritorio, a realizar después de publicar.
 - [ ] Integración/publicación, despliegue y recursos públicos.
 
 Implementación: discovery.js contiene reglas locales sin red. Se preserva el catálogo exacto. Solo «relación estable/algo estable» y la frase explícita de dejar que pase lo que tenga que pasar se clasifican desde las descripciones existentes; las frases ambiguas no se asignan. Opciones propias exactas reconocidas. No hay artistas en el catálogo actual: no se han fabricado. Coincidencias por nombres sin acentos/mayúsculas cuando no hay dos IDs conocidos; con dos IDs se exige mismo proveedor e ID. Un punto por cada interés/artista único y por misma intención explícita; empates mantienen orden de catálogo, cero puntos conserva orden habitual.
@@ -16,4 +17,6 @@ Once baterías PASS con DOM/almacenamiento/viewport simulados: las diez anterior
 
 Navegador: inventario sin host («The browser access host is unavailable»). Pendiente revisión visual y táctil en móvil/escritorio/iPhone; no bloquea publicar según autorización permanente.
 
-Siguiente paso exacto: generar/verificar docs/, guardar commit de implementación y documentar recorrido/limitaciones antes de integrar/publicar.
+Commit de implementación 9faf357. Paquete regenerado: 82 archivos HTTP correctos en raíz y /buba-friends/, con igualdad de fuentes y copias. Guía, regla de afinidad y clasificación conservadora de intención documentadas en codificacion/README.md.
+
+Siguiente paso exacto: guardar documentación, actualizar origin/main, guardar recuperación pública, integrar y publicar versión 20261031-2; verificar ejecución de Pages y recursos HTTPS antes de entregar.

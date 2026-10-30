@@ -2,7 +2,7 @@
 
 Demo para la presentación del viernes 30 de octubre de 2026.
 
-**Web publicada · versión 20261031-1:** https://izangnz.github.io/buba-friends/?v=20261031-1
+**Web publicada · versión 20261031-2:** https://izangnz.github.io/buba-friends/?v=20261031-2
 
 **Repositorio:** https://github.com/Izangnz/buba-friends
 
