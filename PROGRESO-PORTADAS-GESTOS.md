@@ -8,7 +8,7 @@ Base main b5fe745 (versión publicada completa). Árbol inicial limpio. Rama can
 - [x] Diez baterías de lógica/regresiones y sintaxis PASS; intento visual bloqueado por herramientas.
 - [x] Paquete docs/ de 81 archivos comprobado por HTTP real en raíz y subruta.
 - [ ] Revisión visual/táctil real en móvil/escritorio/iPhone.
-- [ ] Commits finales, vista previa y guía.
+- [x] Commit de implementación fbc832e, vista previa aislada y guía de cinco minutos.
 
 Implementado: miniaturas de imágenes seleccionadas en creación/edición, portada circular, subida opcional y borrador de encuadre/zoom mediante BubaPhoto.drawCrop. La portada independiente se guarda como JPEG en coverImage/coverKey del registro de colección en meta (misma base/version), fuera de storyIds y del almacén de historias. Cancelar no escribe. Lectura antigua por coverId intacta; una portada recortada es una copia independiente y puede seguir usándose aunque se quite su imagen de origen del recorrido. Borrar una colección libera solo sus metadatos/portada, sin tocar imágenes de otras colecciones. URLs temporales liberadas al cerrar/cancelar; URLs guardadas invalidadas por coverKey al sustituir.
 
@@ -20,4 +20,6 @@ Revisión visual intentada: inventario sin navegadores, error «The browser acce
 
 Comprobaciones adicionales completadas: portada al crear colección en una sola transacción, selección de miniatura al editar, cancelar, error de cuota conservando diálogo y portada, Blob en meta con confirmación/aborto del repositorio IndexedDB simulado, foto de perfil independiente intacta. Ajustar portada actual disponible también para portadas subidas previamente.
 
-Siguiente paso exacto: guardar la etapa de implementación y completar guía/vista previa local para revisión manual sin publicar.
+Vista previa: http://127.0.0.1:4178/buba-friends/ · versión 20261031-1. Guía de prueba en codificacion/README.md.
+
+Siguiente paso exacto: revisar el recorrido descrito a 375/390 px y escritorio y en iPhone real, prestando atención al círculo, selección de archivo/encuadre/recarga y gesto horizontal frente al scroll vertical. Corregir los hallazgos antes de aprobar publicación. No se ha publicado, hecho push ni integrado en main.
