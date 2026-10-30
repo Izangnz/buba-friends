@@ -1,0 +1,25 @@
+// Actual application handlers with isolated DOM/storage doubles; no visual/device assertions.
+const assert=require('node:assert/strict');
+const {harness}=require('./interaction.test.cjs');
+const h=harness();h.node('#adult').onchange({target:{checked:true}});h.node('#start').onclick();
+assert.equal(h.run('state.profileCompleted'),false);
+h.submit('#profile-form',{name:'Prueba',age:'18',bio:'',interests:''});
+assert.equal(h.run('state.setupStep'),1);assert.equal(h.run('state.profileDraft'),true);
+let saved=JSON.parse(h.store['buba-friends-v1']);const reloaded=harness(saved);
+assert.equal(reloaded.run('page'),'setup');assert.equal(reloaded.run('state.setupStep'),1);assert.equal(reloaded.run('state.me.name'),'Prueba');
+for(let i=1;i<6;i++)h.submit('#profile-form',{name:'Prueba',age:'18',bio:'Texto propio',interests:'Café',seeking:'Amistad'});
+assert.equal(h.run('state.setupStep'),6);assert.equal(h.run('state.profileCompleted'),false);
+const form=h.node('#profile-form');form.data=h.run('({...state.me})');form.querySelector('[data-setup-prev]').onclick();assert.equal(h.run('state.setupStep'),5);
+h.submit('#profile-form',{name:'Prueba',age:'18',bio:'Texto propio',interests:'Café',seeking:'Amistad'});
+h.submit('#profile-form',{name:'Prueba',age:'18',bio:'Texto propio',interests:'Café',seeking:'Amistad',question0:'Un plan que siempre me apetece…',answer0:'Un paseo <tranquilo>'});
+assert.equal(h.run('state.profileCompleted'),true);assert.equal(h.run('state.profileDraft'),false);
+assert.equal(h.run('state.me.prompts.length'),1);assert.match(h.run('personalSections(state.me)'),/Un paseo &lt;tranquilo&gt;/);
+saved=JSON.parse(h.store['buba-friends-v1']);const complete=harness(saved);assert.equal(complete.run('page'),'discover');
+h.choose('both');h.run("go('profile')");h.node('#edit-profile').onclick();const before=h.run('JSON.stringify(state.me)');
+h.node('#profile-form').elements.name.value='Descartar';h.node('#profile-form').querySelector('[data-cancel-profile]').onclick();assert.equal(h.run('editingProfile'),false);assert.equal(h.run('JSON.stringify(state.me)'),before);
+h.node('#preview-profile').onclick();assert.match(h.dialog.innerHTML,/TU PERFIL/);assert.match(h.dialog.innerHTML,/Amistad/);assert.match(h.dialog.innerHTML,/Un paseo &lt;tranquilo&gt;/);assert.doesNotMatch(h.dialog.innerHTML,/Mis gustos musicales/);h.dialog.close();
+assert.equal(h.run('profiles.length'),30);assert.equal(h.run('profiles.some(p=>p.name===state.me.name)'),false);
+h.run("state.me.interests=profiles[0].tags[0];state.me.music=profiles[0].music");assert.match(h.run('sharedProfile(profiles[0])'),/Os gusta:/);
+h.run("state.me.interests='Sin coincidencia';state.me.music={artists:[],songs:[]}");assert.equal(h.run('sharedProfile(profiles[0])'),'');
+const blocked=harness({...saved,profileCompleted:false,profileDraft:true,setupStep:3},{failSave:true});blocked.submit('#profile-form',{name:'Nuevo',age:'20',bio:'',interests:''});assert.equal(blocked.run('state.setupStep'),3);assert.equal(blocked.run('state.me.name'),'Prueba');
+console.log('Perfil personal: pasos, volver, borrador/recarga, creación, intención, preguntas, cancelar, vista previa, campos vacíos e intereses compartidos: PASS (simulaciones).');

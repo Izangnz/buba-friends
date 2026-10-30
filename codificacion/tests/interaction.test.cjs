@@ -18,7 +18,7 @@ function harness(saved, {failSave = false, reducedMotion = false} = {}) {
     remove(){this.isConnected=false;}, scrollIntoView(){},
     setPointerCapture(id){this.capture=id;}, hasPointerCapture(id){return this.capture===id;},
     releasePointerCapture(){this.capture=null;},
-    querySelector(s){this.parts??={};return this.parts[s]??={style:{},textContent:''};},
+    querySelector(s){this.parts??={};return this.parts[s]??={style:{},textContent:'',addEventListener(){}};},
   });
   function select(markup, id) {
     const n=element();
@@ -92,8 +92,9 @@ function harness(saved, {failSave = false, reducedMotion = false} = {}) {
     tick(ms=400){clock+=ms;},
     blur(){for(const fn of windowEvents.get('blur')||[])fn();},hide(){document.visibilityState='hidden';for(const fn of documentEvents.get('visibilitychange')||[])fn();document.visibilityState='visible';},
     choose(choice){const b=nodes['[data-preference]:'+choice];assert.ok(b);b.onclick();},
-    start(choice='both'){this.node('#adult').onchange({target:{checked:true}});this.node('#start').onclick();this.submit('#profile-form',{name:'Demo',age:'30',bio:'',interests:''});if(!failSave)this.choose(choice);},
-    submit(selector,data){const form=this.node(selector);form.data=data;form.onsubmit({preventDefault(){},target:form});},
+    start(choice='both'){this.node('#adult').onchange({target:{checked:true}});this.node('#start').onclick();this.completeProfile({name:'Demo',age:'30',bio:'',interests:''});if(!failSave)this.choose(choice);},
+    completeProfile(data){for(let i=0;i<7&&!this.run('state.profileCompleted');i++)this.submit('#profile-form',data);},
+    submit(selector,data){const form=this.node(selector);form.data=data;for(const [k,v] of Object.entries(data))form.elements[k]={value:String(v)};form.onsubmit({preventDefault(){},target:form});},
     apply(data){const form=lastDialog.querySelector('#filters');form.data=data;form.onsubmit({preventDefault(){}});},
   };
 }
@@ -107,7 +108,7 @@ for(const choice of ['women','men','both']){
   assert.equal(h.run('state.preference'),null);
   assert.doesNotMatch(h.run('content()'),/id="swipe-card"/);
   assert.equal(h.run('page'),'setup');h.run("go('matches')");assert.equal(h.run('page'),'setup');
-  h.submit('#profile-form',{name:'Demo',age:'30',bio:'',interests:''});h.choose(choice);
+  h.completeProfile({name:'Demo',age:'30',bio:'',interests:''});h.choose(choice);
   let attempts=0;
   while(!h.run('state.matches.length')&&attempts<3){h.tick();h.node('#like').onclick();attempts++;}
   assert.equal(h.run('state.matches.length'),1,`${choice}: easy simulated match`);
@@ -291,7 +292,7 @@ const freshTest=harness();assert.equal(freshTest.run('state.me.name'),'');assert
 freshTest.node('#adult').onchange({target:{checked:true}});freshTest.node('#start').onclick();
 for(const age of ['',17,101,'18.5','2e1']){freshTest.submit('#profile-form',{name:'Demo',age,bio:'',interests:''});assert.equal(freshTest.run('state.profileCompleted'),false);}
 freshTest.submit('#profile-form',{name:'   ',age:18,bio:'',interests:''});assert.equal(freshTest.run('state.profileCompleted'),false);
-freshTest.submit('#profile-form',{name:'D',age:100,bio:'',interests:''});assert.equal(freshTest.run('state.profileCompleted'),true);
+freshTest.completeProfile({name:'D',age:100,bio:'',interests:''});assert.equal(freshTest.run('state.profileCompleted'),true);
 for(const kind of ['artists','songs']){const route=kind==='artists'?'artist':'track';const valid='https://open.spotify.com/'+route+'/'+'a'.repeat(22);assert.equal(freshTest.run(`spotifyURL(${JSON.stringify(valid)},'${kind}')`),valid);for(const bad of ['http://open.spotify.com/'+route+'/'+'a'.repeat(22),'https://open.spotify.com.evil.test/'+route+'/'+'a'.repeat(22),'https://evil.test/track/'+'a'.repeat(22),'javascript:alert(1)','https://open.spotify.com/album/'+'a'.repeat(22)])assert.throws(()=>freshTest.run(`spotifyURL(${JSON.stringify(bad)},'${kind}')`));}
 freshTest.run("state.preference='both';go('stories')");assert.equal(freshTest.run('page'),'stories');assert.doesNotMatch(freshTest.run("page='matches';content()"),/stories-section/);
 console.log('Nuevo inicio obligatorio, migraciones intacta/personalizada/ambigua, edades límite, cuatro destinos y validación Spotify: correctos.');

@@ -34,7 +34,16 @@ function createRepository(indexedDB){
    tx.onabort=tx.onerror=()=>reject(error('No se pudo guardar o leer la foto. Revisa el espacio y los permisos del navegador.'));
   });
  }
- return {getPhoto:()=>photoOperation('get'),putPhoto:blob=>photoOperation('put',blob),deletePhoto:()=>photoOperation('delete'),async transact(transform){
+ async function galleryOperation(items){
+  if(items!==undefined&&(!Array.isArray(items)||items.length>6||items.some(b=>!(b instanceof Blob)||b.type!=='image/jpeg'||!b.size||b.size>MAX_FILE)))throw error('La galería preparada no es válida.');
+  const db=await open();return new Promise((resolve,reject)=>{
+   const tx=db.transaction(['meta'],items===undefined?'readonly':'readwrite'),store=tx.objectStore('meta');let result=[];
+   if(items===undefined){const r=store.get('profile-gallery-v1');r.onsuccess=()=>{if(r.result)result=r.result.blobs;else{const old=store.get('profile-photo');old.onsuccess=()=>{result=old.result?.blob?[old.result.blob]:[];};}};}
+   else{store.put({key:'profile-gallery-v1',blobs:items});if(items.length)store.put({key:'profile-photo',blob:items[0]});else store.delete('profile-photo');result=items;}
+   tx.oncomplete=()=>resolve(result);tx.onabort=tx.onerror=()=>reject(error('No se pudo guardar la galería. Las fotos anteriores se conservan.'));
+  });
+ }
+ return {getGallery:()=>galleryOperation(),putGallery:items=>galleryOperation(items),getPhoto:()=>photoOperation('get'),putPhoto:blob=>photoOperation('put',blob),deletePhoto:()=>photoOperation('delete'),async transact(transform){
   const db=await open();
   return new Promise((resolve,reject)=>{
    let result,failed=false;
