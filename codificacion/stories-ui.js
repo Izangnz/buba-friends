@@ -47,7 +47,7 @@ function repaintStories(){
 async function refreshStories({paint=true}={}){
  try{
   const library=await storyService.library();storyRecords=library.stories;storyCollections=library.collections;storyReady=true;storyFailure='';
-  for(const [id,url] of storyURLs)if(!storyRecords.some(s=>s.id===id)){URL.revokeObjectURL(url);storyURLs.delete(id);}
+  for(const [id,url] of storyURLs)if(!storyRecords.some(s=>s.id===id)&&!storyCollections.some(c=>c.coverImage&&'collection-'+c.coverKey===id)){URL.revokeObjectURL(url);storyURLs.delete(id);}
   clearTimeout(storyTimer);
   const expiry=storyRecords.filter(s=>storyAPI.active(s,Date.now())).map(s=>s.expiresAt);
   if(expiry.length)storyTimer=setTimeout(()=>refreshStories(),Math.max(1,Math.min(...expiry)-Date.now()+1));

@@ -102,7 +102,7 @@ module.exports=async function runStoriesTests(){
    };dialogs.push(dialog);return dialog;
   },
  };
- const context=vm.createContext(ui);ui.state.chatMeta={};const appSource=fs.readFileSync(path.join(__dirname,'../app.js'),'utf8');vm.runInContext(appSource.slice(appSource.indexOf('function normalizeChatMessages('),appSource.indexOf('function messageDay(')),context);vm.runInContext(fs.readFileSync(path.join(__dirname,'../collections-ui.js'),'utf8'),context);vm.runInContext(fs.readFileSync(path.join(__dirname,'../stories-ui.js'),'utf8'),context);
+ const context=vm.createContext(ui);ui.state.chatMeta={};const appSource=fs.readFileSync(path.join(__dirname,'../app.js'),'utf8');vm.runInContext(appSource.slice(appSource.indexOf('function normalizeChatMessages('),appSource.indexOf('function messageDay(')),context);vm.runInContext(fs.readFileSync(path.join(__dirname,'../collection-cover.js'),'utf8'),context);vm.runInContext(fs.readFileSync(path.join(__dirname,'../collections-ui.js'),'utf8'),context);vm.runInContext(fs.readFileSync(path.join(__dirname,'../stories-ui.js'),'utf8'),context);
  await vm.runInContext('refreshStories()',context);
  const markup=vm.runInContext('storiesConnectionsView()',context);
  assert.match(markup,/Tu historia/);assert.match(markup,/example-vega/);assert.match(markup,/example-nico/);assert.doesNotMatch(markup,/example-alma/);

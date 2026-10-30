@@ -13,3 +13,7 @@ require('./collections.test.cjs')().catch(e=>{console.error(e);process.exitCode=
 require('./personal-profile.test.cjs');
 
 require('./conversations.test.cjs')().catch(e=>{console.error(e);process.exitCode=1;});
+
+require('./cover-editor.test.cjs')().catch(e=>{console.error(e);process.exitCode=1;});
+
+require('./conversation-swipe.test.cjs')().catch(e=>{console.error(e);process.exitCode=1;});

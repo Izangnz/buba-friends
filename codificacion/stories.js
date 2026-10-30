@@ -93,14 +93,22 @@ function createService({repository,clock=()=>Date.now(),idFactory=()=>global.cry
    collect();return {put:[...changed.values()],remove:[...deleted],seeded:true,library:{migrated:true,collections},result};
   });
  }
+ function applyCover(collection,cover){
+  if(!cover)return collection;
+  if(cover.storyId&&!collection.storyIds.includes(cover.storyId))throw error('Elige una imagen que siga en la colección.');
+  if(cover.blob){if(!(cover.blob instanceof Blob)||cover.blob.type!=='image/jpeg'||!cover.blob.size||cover.blob.size>MAX_FILE)throw error('La portada preparada no es válida.');collection.coverImage=cover.blob;collection.coverKey='cover-'+idFactory();if(cover.storyId)collection.coverId=cover.storyId;}
+  else{if(!cover.storyId)throw error('Selecciona una portada.');collection.coverId=cover.storyId;delete collection.coverImage;delete collection.coverKey;}
+  return collection;
+ }
  return {
   list(){return run(({all})=>sorted(all));},
   library(){return run(({all,collections})=>({stories:sorted(all),collections}));},
   listCollections(){return run(({collections})=>collections);},
-  createCollection(name,ids){return run(c=>c.createCollection(name,ids));},
+  createCollection(name,ids,cover=null){return run(c=>applyCover(c.createCollection(name,ids),cover));},
   addToCollection(id,ids){return run(c=>{const items=c.ownIds(ids),collection=c.findCollection(id);collection.storyIds=[...new Set([...collection.storyIds,...items])];return collection;});},
   renameCollection(id,name){return run(c=>{const clean=nameOf(name),collection=c.findCollection(id);collection.name=clean;return collection;});},
-  setCollectionCover(id,storyId){return run(c=>{const collection=c.findCollection(id);if(!collection.storyIds.includes(storyId))throw error('La portada debe pertenecer a esta colección.');collection.coverId=storyId;return collection;});},
+  setCollectionCover(id,storyId){return run(c=>applyCover(c.findCollection(id),{storyId}));},
+  saveCollectionCover(id,cover){return run(c=>applyCover(c.findCollection(id),cover));},
   removeFromCollection(id,storyId,{allowEmpty=true}={}){return run(c=>{const collection=c.findCollection(id),remaining=collection.storyIds.filter(item=>item!==storyId);if(!remaining.length&&!allowEmpty)throw error('Ahora es la última imagen. Cancela y vuelve a quitarla para confirmar que también se elimina la colección.');collection.storyIds=remaining;if(!collection.storyIds.length)c.dropCollection(id);});},
   deleteCollection(id){return run(c=>c.dropCollection(id));},
   get(id,{allowFeatured=false}={}){return run(({all,now})=>{const s=all.get(id);return s&&(active(s,now)||(allowFeatured&&s.authorId==='self'&&s.featured))?s:null;});},
