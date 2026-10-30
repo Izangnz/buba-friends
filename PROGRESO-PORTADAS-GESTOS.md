@@ -23,3 +23,12 @@ Comprobaciones adicionales completadas: portada al crear colección en una sola 
 Vista previa: http://127.0.0.1:4178/buba-friends/ · versión 20261031-1. Guía de prueba en codificacion/README.md.
 
 Siguiente paso exacto: revisar el recorrido descrito a 375/390 px y escritorio y en iPhone real, prestando atención al círculo, selección de archivo/encuadre/recarga y gesto horizontal frente al scroll vertical. Corregir los hallazgos antes de aprobar publicación. No se ha publicado, hecho push ni integrado en main.
+
+
+## Publicación autorizada · 31/10/2026
+
+El usuario autorizó publicar esta candidata y estableció publicación directa de las siguientes modificaciones solicitadas. Preferencia guardada en AGENTS.md de la raíz y codificacion/AGENTS.md. La ausencia de revisión real en iPhone no bloquea publicar; el usuario la realizará después.
+
+Se revisó árbol limpio y origin/main, guardó recuperacion-publica-antes-portadas-gestos-20261031 sobre b5fe745 e integró la candidata 2b102da por fast-forward, conservando el historial. Diez baterías simuladas y sintaxis PASS. Se regenera/verifica el paquete de 81 archivos antes del push. No se accedió ni borró almacenamiento del navegador.
+
+Versión pública prevista en esta publicación: 20261031-1. Siguiente paso exacto: confirmar Pages exitoso para el commit final y comparar los recursos HTTPS con docs/ antes de entregar el enlace. Después corresponde al usuario revisar círculos, selector de fotos, gesto horizontal/scroll vertical y borradores en iPhone real. Las restricciones de no publicar anteriores describen la etapa de candidata y quedan superadas por esta autorización.

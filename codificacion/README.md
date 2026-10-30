@@ -404,3 +404,12 @@ La base `buba-friends-stories-v1`, su versión y almacenes no cambian. Las colec
 5. Probar un gesto corto y uno vertical: no deben archivar ni abrir el chat. Con dos conversaciones, abrir acciones de una y luego de otra: solo una debe quedar abierta. Tocar fuera para cerrar; tocar una fila sin arrastrar debe abrir el chat. Comprobar también Archivar/Recuperar desde su menú.
 
 No publicar esta candidata hasta revisarla. La vista previa sirve una instantánea de `docs/`: reiniciar tras regenerarla.
+
+
+## Publicación de portadas y gestos · autorizada el 31/10/2026
+
+El usuario aprobó publicar la candidata completa de portadas visuales y archivo por gesto, conservando perfil y conversaciones anteriores. Se integra en main desde 2b102da sin reescribir historial. Recuperación pública previa: recuperacion-publica-antes-portadas-gestos-20261031 sobre b5fe745. Versión **20261031-1**: **https://izangnz.github.io/buba-friends/?v=20261031-1**. El parámetro no cambia el origen ni las claves del guardado; no hay que reiniciar datos.
+
+La preferencia permanente de comprobar y publicar directamente cada modificación solicitada, sin esperar a revisión de iPhone ni otra autorización rutinaria, está en AGENTS.md de la raíz y codificacion/AGENTS.md. Solo se dejará sin publicar por petición expresa o por fallo conocido que impida una versión utilizable. Las instrucciones de no publicar de las secciones históricas de candidata quedan superadas para este bloque.
+
+Comprobaciones previas: diez baterías simuladas y sintaxis correctas, migración/portadas compartidas, gesto y borradores, regresiones del perfil, foto, música, Descubrir, Historias y conversaciones. Paquete de 81 archivos comprobado por HTTP local en raíz y subruta. Se verifica el despliegue y la igualdad de recursos públicos antes de entregar. Siguen pendientes la revisión visual y el tacto reales en iPhone; no se presentan los dobles de DOM/canvas/IndexedDB como pruebas reales en móvil.
