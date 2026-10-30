@@ -79,7 +79,7 @@ module.exports=async function runStoriesTests(){
  // UI sequences use the real stories UI, but isolated memory storage and a minimal DOM.
  now=1900000000000;counter=0;const uiRepo=memoryRepository(),revoked=[],saved=[],dialogs=[];
  const style=()=>({setProperty(k,v){this[k]=v;},removeProperty(k){delete this[k];}});
- const bodyClasses=new Set(),viewportEvents={},strip={scrollLeft:145};let rendered=0;
+ const bodyClasses=new Set(),viewportEvents={},strip={scrollLeft:145};let rendered=0,failMessageSave=false;
  const element=()=>({value:'',disabled:false,hidden:false,style:style(),classList:{add(){},remove(){}},focus(){ui.document.activeElement=this;}});
  const listOpener=element();listOpener.dataset={storyAuthor:'vega'};
  const ui={
@@ -91,7 +91,7 @@ module.exports=async function runStoriesTests(){
   profiles:[{id:'vega',name:'Vega'},{id:'nico',name:'Nico'},{id:'alma',name:'Alma'}],
   esc:s=>String(s).replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'),
   document:{addEventListener(){},body:{classList:{add:c=>bodyClasses.add(c),remove:c=>bodyClasses.delete(c)}}},window:{innerWidth:390,scrollX:0,scrollY:260,scrollTo(x,y){this.scrollX=x;this.scrollY=y;},visualViewport:{height:780,offsetTop:0,addEventListener:(e,f)=>viewportEvents[e]=f,removeEventListener:e=>delete viewportEvents[e]},addEventListener(){},removeEventListener(){}},root:{querySelector(s){return s==='.story-strip'?strip:null;},querySelectorAll(s){return s==='[data-story-author]'?[listOpener]:[];}},
-  setTimeout:()=>1,clearTimeout(){},toast(){},render(){rendered++;strip.scrollLeft=0;},focusMain(){},save(){saved.push(JSON.stringify(ui.state));return true;},
+  setTimeout:()=>1,clearTimeout(){},toast(){},render(){rendered++;strip.scrollLeft=0;},focusMain(){},save(){if(failMessageSave)return false;saved.push(JSON.stringify(ui.state));return true;},
   modal(html){
    const controls={},events={};let markup=html;const content={set innerHTML(v){markup=v;for(const key of Object.keys(controls))delete controls[key];}};
    const dialog={get innerHTML(){return markup;},open:true,style:style(),setAttribute(){},classList:{add(){}},
@@ -102,7 +102,7 @@ module.exports=async function runStoriesTests(){
    };dialogs.push(dialog);return dialog;
   },
  };
- const context=vm.createContext(ui);vm.runInContext(fs.readFileSync(path.join(__dirname,'../collections-ui.js'),'utf8'),context);vm.runInContext(fs.readFileSync(path.join(__dirname,'../stories-ui.js'),'utf8'),context);
+ const context=vm.createContext(ui);ui.state.chatMeta={};const appSource=fs.readFileSync(path.join(__dirname,'../app.js'),'utf8');vm.runInContext(appSource.slice(appSource.indexOf('function normalizeChatMessages('),appSource.indexOf('function messageDay(')),context);vm.runInContext(fs.readFileSync(path.join(__dirname,'../collections-ui.js'),'utf8'),context);vm.runInContext(fs.readFileSync(path.join(__dirname,'../stories-ui.js'),'utf8'),context);
  await vm.runInContext('refreshStories()',context);
  const markup=vm.runInContext('storiesConnectionsView()',context);
  assert.match(markup,/Tu historia/);assert.match(markup,/example-vega/);assert.match(markup,/example-nico/);assert.doesNotMatch(markup,/example-alma/);
@@ -144,14 +144,16 @@ module.exports=async function runStoriesTests(){
  await d.querySelector('#feature-story').onclick();const picker=dialogs.at(-1);picker.querySelector('#collection-cancel').onclick();assert.equal(uiRepo.records.find(s=>s.id===mine.id).featured,false,'Cancel does not save a highlight');await vm.runInContext(`storyService.createCollection('Prueba', [${JSON.stringify(mine.id)}]);refreshStories({paint:false})`,context);assert.equal(uiRepo.records.find(s=>s.id===mine.id).featured,true);
  await vm.runInContext("openStory('example-vega-v1')",context);d=dialogs.at(-1);
  d.querySelector('#story-reply-text').value='  ';await d.querySelector('#story-reply').onsubmit({preventDefault(){}});assert.equal(ui.state.messages.vega.length,0);
+ ui.state.chatMeta.vega={archived:true,draft:'Borrador previo'};
+ d.querySelector('#story-reply-text').value='Respuesta que reintentar';failMessageSave=true;await d.querySelector('#story-reply').onsubmit({preventDefault(){}});assert.equal(ui.state.messages.vega.length,0);assert.equal(ui.state.chatMeta.vega.archived,true);assert.equal(d.open,true);assert.equal(d.querySelector('#story-reply-text').value,'Respuesta que reintentar');assert.match(d.querySelector('#story-view-error').textContent,/No se pudo guardar/);failMessageSave=false;
  d.querySelector('#story-reply-text').value='Qué buen plan';const submit=d.querySelector('#story-reply').onsubmit;
  await Promise.all([submit({preventDefault(){}}),submit({preventDefault(){}})]);
  assert.equal(ui.state.messages.vega.length,1);assert.equal(ui.state.messages.nico.length,0);assert.equal(ui.activeChat,'vega');
- assert.equal(ui.state.messages.vega[0].story.id,'example-vega-v1');assert.equal(ui.state.matches.length,2);assert.equal(saved.length,1);
+ assert.equal(ui.state.messages.vega[0].story.id,'example-vega-v1');assert.equal(ui.state.matches.length,2);assert.equal(saved.length,1);assert.equal(ui.state.messages.vega[0].createdAt,now);assert.ok(ui.state.messages.vega[0].id);assert.equal(ui.state.chatMeta.vega.archived,false);assert.equal(ui.state.chatMeta.vega.draft,'Borrador previo');
  await vm.runInContext("openStory('example-nico-v1')",context);const lateDialog=dialogs.at(-1);lateDialog.querySelector('#story-reply-text').value='Demasiado tarde';
  now+=api.DAY;await vm.runInContext('refreshStories()',context);await lateDialog.querySelector('#story-reply').onsubmit({preventDefault(){}});assert.equal(ui.state.messages.nico.length,0,'No response accepted after expiry');
  assert.equal(vm.runInContext('liveStories().length',context),0);assert.equal(vm.runInContext('highlightedStories().length',context),1);
- ui.ref=ui.state.messages.vega[0].story;assert.match(vm.runInContext('storyReference(ref)',context),/Historia no disponible/);
+ ui.ref=ui.state.messages.vega[0].story;assert.match(vm.runInContext('storyReference(ref)',context),/Historia no disponible/);assert.equal(ui.state.messages.vega[0].text,'Qué buen plan');assert.equal(uiRepo.records.some(s=>s.id==='example-vega-v1'),false,'Chat references do not retain expired story images');
  await vm.runInContext(`openStory(${JSON.stringify(mine.id)},true)`,context);d=dialogs.at(-1);d.querySelector('#remove-view-image').onclick();const removal=dialogs.at(-1);await removal.querySelector('#collection-confirm-remove').onclick();
  assert.equal(uiRepo.records.some(s=>s.id===mine.id),false);assert.equal(vm.runInContext('storyURLs.size',context),0);
  await vm.runInContext('resetStories()',context);assert.equal(uiRepo.records.length,3);assert.ok(uiRepo.records.every(s=>s.createdAt===now));

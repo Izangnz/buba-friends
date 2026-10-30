@@ -11,3 +11,5 @@ require('./discover-layout.test.cjs')().catch(e=>{console.error(e);process.exitC
 require('./collections.test.cjs')().catch(e=>{console.error(e);process.exitCode=1;});
 
 require('./personal-profile.test.cjs');
+
+require('./conversations.test.cjs')().catch(e=>{console.error(e);process.exitCode=1;});

@@ -31,7 +31,7 @@ function harness(saved, {failSave = false, reducedMotion = false} = {}) {
   }
   function query(selector) {
     const exists=selector.startsWith('#') ? html.includes(`id="${selector.slice(1)}"`) :
-      selector==='.send input' ? html.includes('id="send"') :
+      selector==='#chat-message' ? html.includes('id="send"') :
       selector==='.messages' ? html.includes('class="messages"') : false;
     return exists ? nodes[selector] ||= element() : null;
   }
@@ -42,7 +42,7 @@ function harness(saved, {failSave = false, reducedMotion = false} = {}) {
     querySelectorAll(selector){
       const attr=selector.slice(1,-1);
       return [...html.matchAll(new RegExp(`${attr}="([^"]+)"`,'g'))].map(m=>{
-        const n=element();n.dataset={[attr.replace('data-','')]:m[1]};nodes[`${selector}:${m[1]}`]=n;return n;
+        const n=element();n.dataset={[attr.replace('data-','').replace(/-([a-z])/g,(_,c)=>c.toUpperCase())]:m[1]};nodes[`${selector}:${m[1]}`]=n;return n;
       });
     },
   };
@@ -85,7 +85,7 @@ function harness(saved, {failSave = false, reducedMotion = false} = {}) {
     *[Symbol.iterator](){yield* Object.entries(this.data);}
   }
   const context=vm.createContext({document,localStorage:{getItem:k=>store[k]||null,setItem:(k,v)=>{if(failSave)throw Error('blocked');store[k]=v;}},
-    URL,window:{scrollTo(){},matchMedia:()=>({matches:reducedMotion}),addEventListener(type,fn){listen(windowEvents,type,fn);},removeEventListener(type,fn){windowEvents.get(type)?.delete(fn);}},setTimeout(){},Date:{now:()=>clock},FormData});
+    URL,window:{scrollTo(){},matchMedia:()=>({matches:reducedMotion}),addEventListener(type,fn){listen(windowEvents,type,fn);},removeEventListener(type,fn){windowEvents.get(type)?.delete(fn);}},setTimeout(){},Date:class extends Date{static now(){return clock;}},FormData});
   vm.runInContext(source,context);
   return {
     run:code=>vm.runInContext(code,context),node:s=>nodes[s]||query(s),get dialog(){return lastDialog;},store,
@@ -184,7 +184,7 @@ h.tick();h.node('#like').onclick();assert.equal(h.run('state.matches.length'),1)
 h.run('undoPass()');assert.equal(h.run('state.matches.length'),1);assert.equal(h.run('state.lastPass'),null);
 h.dialog.querySelector('#keep').onclick();
 h.tick();h.node('#like').onclick();assert.equal(h.run('state.matches.length'),1,'Leo does not match');
-h.run("go('matches')");assert.match(h.run('content()'),/Coincidencias simuladas/);assert.match(h.run('content()'),/Conversaciones/);
+h.run("go('matches')");assert.match(h.run('content()'),/Nuevas conexiones/);assert.match(h.run('content()'),/Conversaciones/);
 
 // Pointer sequences: reset below threshold, vertical movement, exclusions, both directions and cancellation.
 const swipeTest=harness();swipeTest.start();
