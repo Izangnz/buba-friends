@@ -316,3 +316,29 @@ Se comparte el marco cuadrado no compresible y con overflow hidden entre ambos l
 Verificación proporcional: inspección de la captura, selectores y cascada; fuente/docs y HTTP de publicación. Sin cambios en JS, datos, migración, visor grande o retratos de Descubrir. Falta comprobación visual y medición real en iPhone del recorte de imágenes verticales, horizontales y cuadradas en Historias y Destacadas; no se afirma validada la apariencia por pruebas de lógica.
 
 Recuperación anterior: `recuperacion-antes-recorte-avatares-20261030`; posterior: commit final y `recuperacion-despues-recorte-avatares-20261030`.
+
+## Candidata de perfil personal · 30/10/2026 · versión 20261030-4
+
+**Solo rama local `candidata/perfil-personal-20261030`; no publicada ni integrada en main.** Implementación recuperable en `2612c6e`; punto anterior `recuperacion-antes-perfil-personal-20261030`. Progreso y siguientes comprobaciones en `PROGRESO-PERFIL.md` de la raíz.
+
+La creación nueva tiene siete pasos: básicos (nombre y edad 18–100), fotos, sobre mí, intención, intereses, música y preguntas. Los seis últimos son opcionales. El borrador y el paso se conservan en la clave habitual `buba-friends-v1` usando `profileDraft` y `setupStep`; solo Crear mi perfil termina el proceso. Los perfiles existentes válidos entran directamente, manteniendo la revisión de datos antiguos ambiguos. Los campos nuevos no contienen gustos ni respuestas predeterminados. Se pueden responder hasta tres preguntas del catálogo y elegir intención. Editar ofrece Guardar o Cancelar cambios de texto; Cerrar edición también descarta el texto provisional.
+
+Fotos: seis espacios, selección múltiple, encuadre individual con zoom y desplazamiento por deslizadores, sustitución, eliminación confirmada, Hacer principal y flechas para ordenar. Al seleccionar varias, cada Guardar foto conserva esa imagen y abre el encuadre de la siguiente; cancelar deja las ya confirmadas y descarta las pendientes. La primera siempre es la principal. **Las fotos tienen confirmación propia, independiente de Guardar/Cancelar cambios de texto**, explicado junto a la galería. Se aceptan JPEG/PNG/WebP con validación de firma, hasta 8 MB y 40 MP; se optimizan y el recorte final se guarda como JPEG de 512×512, calidad 82. La previsualización cuadrada muestra ese encuadre; avatares circulares recortan sus esquinas.
+
+IndexedDB conserva la misma base y versión. La clave `profile-gallery-v1` en `meta` contiene hasta seis blobs. Si no existe se lee la foto antigua como principal. Al modificar la galería se confirman la lista y la clave anterior `profile-photo` (primera foto) en una sola transacción; una lista vacía impide resucitar la imagen antigua. Fallos o abortos conservan el estado y las fotos anteriores. No se toca el almacén de Historias/colecciones. Las fotos no salen del navegador ni se incorporan al código, al historial o al paquete publicable.
+
+Ver mi perfil abre una vista guardada con galería navegable e indicador de posición, nombre/edad, descripción, intención, intereses, preguntas y música; las secciones vacías se omiten. No añade al usuario al catálogo ni genera destinatarios. El detalle de los 30 personajes conserva IDs, ilustraciones, marcos de demostración, datos y navegación. «Os gusta» aparece solo cuando coinciden etiquetas de intereses o artistas guardados; no se calculan porcentajes. El controlador y el gesto de decidir en Descubrir permanecen intactos.
+
+**Verificado realmente:** sintaxis de JS; siete baterías de lógica con DOM/IndexedDB simulados (interacción, perfil personal, Historias, música, foto/galería, disposición de Descubrir y colecciones); creación, pasos/volver, borrador/recarga, perfil completado, intención/preguntas, edición/cancelación, vista previa y vacíos; migración de foto, seis fotos/exceso, selección múltiple/encuadre, principal, sustitución, eliminación, errores/abortos y persistencia. Regresiones de filtros, decisiones/gestos, conexiones, mensajes, Historias y Destacadas. Recursos gráficos y catálogo sin cambios. `docs/` contiene 79 archivos; igualdad con fuentes, aislamiento y HTTP real de los 79 archivos en raíz y subruta, además de `git diff --check`.
+
+**Pendiente:** revisión visual real a 375/390 px y escritorio, Tab/foco, selección de archivos real e IndexedDB de Safari, teclado virtual y tacto de iPhone. Inventario de navegador: `The browser access host is unavailable`; intento alternativo con Safari nativo agotó 10 segundos. Ninguna prueba simulada se presenta como revisión visual o prueba de iPhone. No se ha accedido al almacenamiento personal del navegador.
+
+### Probar en cinco minutos
+
+1. Ejecutar `python3 scripts/preview_publication.py --port 4176` y abrir **http://127.0.0.1:4176/buba-friends/**. Este origen tiene almacenamiento separado de la demo anterior. Usar datos de ensayo o ventana privada, sin reiniciar los datos que se quieran conservar.
+2. Confirmar +18, escribir nombre/edad, avanzar y recargar: debe volver al mismo borrador/paso. Omitir fotos si se desea; completar intención, un interés y una pregunta. Crear mi perfil y elegir a quién descubrir. Recargar: ya no debe repetir la creación.
+3. Mi perfil → Editar mi perfil → Fotos: seleccionar dos imágenes de ensayo, ajustar y guardar cada una. Hacer principal la segunda y usar las flechas. Sustituir o eliminar una; recargar y verificar el orden.
+4. Cambiar texto y Cancelar cambios de texto: debe conservarse el texto guardado. Volver a editar, guardar intención/respuesta/música y abrir Ver mi perfil; recorrer fotos y comprobar los datos.
+5. Descubrir → Información: recorrer galería sin decidir. Cerrar, probar interés/pasar y Filtros; abrir Conexiones y un mensaje local. Revisar Historias y una colección de Destacadas.
+
+El servidor de vista previa sirve una instantánea aislada de `docs/`. Tras regenerar el paquete, reiniciarlo. No hacer push ni merge hasta revisar esta candidata.
