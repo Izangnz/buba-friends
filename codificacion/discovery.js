@@ -1,0 +1,16 @@
+/* Pure local discovery rules. No invented catalog data, network, or compatibility percentages. */
+(function(global){
+'use strict';
+const intentions=[['stable','Relación estable'],['open','Conocer gente y ver qué surge'],['friendship','Amistad']];
+const normalize=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLocaleLowerCase('es').replace(/\s+/g,' ');
+function intention(value){const n=normalize(value);if(n==='relacion estable'||/\brelacion estable\b|\balgo estable\b/.test(n))return 'stable';if(n==='conocer gente y ver que surge'||n.includes('dejar que pase lo que tenga que pasar'))return 'open';if(n==='amistad')return 'friendship';return '';}
+const tags=value=>[...new Map((Array.isArray(value)?value:String(value||'').split(',')).map(t=>[normalize(t),String(t).trim()]).filter(([k])=>k)).values()];
+function artistIdentity(a){if(a?.provider&&((typeof a.providerId==='string'&&a.providerId.trim())||(Number.isSafeInteger(a.providerId)&&a.providerId>0)))return [a.provider,String(a.providerId)];const m=String(a?.url||'').match(/^https:\/\/open\.spotify\.com\/artist\/([A-Za-z0-9]{22})(?:[/?#]|$)/);return m?['spotify',m[1]]:null;}
+function sameArtist(a,b){if(!normalize(a?.name)||!normalize(b?.name))return false;const x=artistIdentity(a),y=artistIdentity(b);return x&&y?x[0]===y[0]&&x[1]===y[1]:normalize(a.name)===normalize(b.name);}
+function affinity(me,p){const mine=new Set(tags(me.interests).map(normalize)),shared=tags(p.tags).filter(t=>mine.has(normalize(t)));const a=Array.isArray(me.music?.artists)?me.music.artists:[],b=Array.isArray(p.music?.artists)?p.music.artists:[];const artists=tags(b.filter(x=>a.some(y=>sameArtist(x,y))).map(x=>x.name));const own=intention(me.seeking),other=intention(p.seeking),sameIntent=!!own&&own===other;return {interests:shared,artists,sameIntent,intention:own,score:shared.length+artists.length+(sameIntent?1:0),comparable:!!(mine.size&&tags(p.tags).length||a.length&&b.length||own&&other)};}
+function interests(filters){return tags(Array.isArray(filters.interests)?filters.interests:filters.interest?[filters.interest]:[]);}
+function normalizeFilters(f,catalog){const all=tags(catalog.flatMap(p=>p.tags)),lookup=new Map(all.map(t=>[normalize(t),t]));const old=({'Bici':'Bicicleta','Conciertos':'Música en directo'})[f.interest]||f.interest;const selected=tags(Array.isArray(f.interests)?f.interests:old?[old]:[]).map(t=>lookup.get(normalize(t))).filter(Boolean);return {...f,interest:selected[0]||'',interests:selected,intention:intentions.some(([id])=>id===f.intention)?f.intention:''};}
+function matches(p,preference,f){const selected=interests(f).map(normalize);return !!preference&&(preference==='both'||p.gender===(preference==='women'?'woman':'man'))&&p.age>=f.min&&p.age<=f.max&&(!f.intention||intention(p.seeking)===f.intention)&&(!selected.length||tags(p.tags).some(t=>selected.includes(normalize(t))));}
+function order(list,me,mode){return mode==='common'?list.map((p,i)=>({p,i,score:affinity(me,p).score})).sort((a,b)=>b.score-a.score||a.i-b.i).map(x=>x.p):list.slice();}
+const api={intentions,normalize,intention,tags,sameArtist,affinity,interests,normalizeFilters,matches,order};if(typeof module!=='undefined'&&module.exports)module.exports=api;else global.BubaDiscovery=api;
+})(typeof globalThis!=='undefined'?globalThis:this);

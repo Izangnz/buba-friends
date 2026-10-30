@@ -68,6 +68,7 @@ function harness(saved, {failSave = false, reducedMotion = false} = {}) {
             }
             return controls[s];
           },
+          querySelectorAll(selector){if(!/^\[data-[a-z-]+\]$/.test(selector))return [];const attr=selector.slice(1,-1);return [...this.innerHTML.matchAll(new RegExp(attr+'="([^"]+)"','g'))].map(m=>{const key=selector+':'+m[1];if(!controls[key]){controls[key]=element();controls[key].dataset={[attr.slice(5).replace(/-([a-z])/g,(_,c)=>c.toUpperCase())]:m[1]};}return controls[key];});},
           addEventListener(type,fn){(events[type]??=[]).push(fn);},
           showModal(){lastDialog=this;this.closed=false;this.open=true;},
           close(){this.closed=true;this.open=false;for(const fn of events.close||[])fn();},
@@ -82,9 +83,10 @@ function harness(saved, {failSave = false, reducedMotion = false} = {}) {
         interest:form.elements.interest.value,preference:form.elements.preference.value};
     }
     get(k){return this.data[k];}
+    getAll(k){const value=this.data[k];return Array.isArray(value)?value:value?[value]:[];}
     *[Symbol.iterator](){yield* Object.entries(this.data);}
   }
-  const context=vm.createContext({document,localStorage:{getItem:k=>store[k]||null,setItem:(k,v)=>{if(failSave)throw Error('blocked');store[k]=v;}},
+  const context=vm.createContext({BubaDiscovery:require('../discovery.js'),document,localStorage:{getItem:k=>store[k]||null,setItem:(k,v)=>{if(failSave)throw Error('blocked');store[k]=v;}},
     URL,window:{scrollTo(){},matchMedia:()=>({matches:reducedMotion}),addEventListener(type,fn){listen(windowEvents,type,fn);},removeEventListener(type,fn){windowEvents.get(type)?.delete(fn);}},setTimeout(){},Date:class extends Date{static now(){return clock;}},FormData});
   vm.runInContext(source,context);
   return {

@@ -19,7 +19,7 @@ h.choose('both');h.run("go('profile')");h.node('#edit-profile').onclick();const 
 h.node('#profile-form').elements.name.value='Descartar';h.node('#profile-form').querySelector('[data-cancel-profile]').onclick();assert.equal(h.run('editingProfile'),false);assert.equal(h.run('JSON.stringify(state.me)'),before);
 h.node('#preview-profile').onclick();assert.match(h.dialog.innerHTML,/TU PERFIL/);assert.match(h.dialog.innerHTML,/Amistad/);assert.match(h.dialog.innerHTML,/Un paseo &lt;tranquilo&gt;/);assert.doesNotMatch(h.dialog.innerHTML,/Mis gustos musicales/);h.dialog.close();
 assert.equal(h.run('profiles.length'),30);assert.equal(h.run('profiles.some(p=>p.name===state.me.name)'),false);
-h.run("state.me.interests=profiles[0].tags[0];state.me.music=profiles[0].music");assert.match(h.run('sharedProfile(profiles[0])'),/Os gusta:/);
+h.run("state.me.interests=profiles[0].tags[0];state.me.music=profiles[0].music");assert.match(h.run('sharedProfile(profiles[0])'),/Compartís/);
 h.run("state.me.interests='Sin coincidencia';state.me.music={artists:[],songs:[]}");assert.equal(h.run('sharedProfile(profiles[0])'),'');
 const blocked=harness({...saved,profileCompleted:false,profileDraft:true,setupStep:3},{failSave:true});blocked.submit('#profile-form',{name:'Nuevo',age:'20',bio:'',interests:''});assert.equal(blocked.run('state.setupStep'),3);assert.equal(blocked.run('state.me.name'),'Prueba');
 console.log('Perfil personal: pasos, volver, borrador/recarga, creación, intención, preguntas, cancelar, vista previa, campos vacíos e intereses compartidos: PASS (simulaciones).');

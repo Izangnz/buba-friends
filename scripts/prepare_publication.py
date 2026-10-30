@@ -15,7 +15,7 @@ def runtime_files():
     assert len(catalog) == len({p['id'] for p in catalog}) == 30
     files = [
         'index.html', 'manifest.webmanifest',
-        'codificacion/app.js', 'codificacion/styles.css',
+        'codificacion/app.js', 'codificacion/styles.css', 'codificacion/discovery.js',
         'codificacion/stories.js', 'codificacion/stories-ui.js', 'codificacion/profile-photo.js', 'codificacion/collections-ui.js', 'codificacion/collection-cover.js', 'codificacion/conversation-swipe.js',
         *['codificacion/assets/stories/' + name for name in ('gallery.svg', 'trail.svg', 'music.svg')],
         *['codificacion/assets/' + name for name in (
