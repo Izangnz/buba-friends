@@ -7,7 +7,7 @@ Base main c01ed5a, estado inicial limpio. Rama mejora/descubrimiento-20261031. R
 - [x] Tarjetas/Explorar persistentes, Guardados privados, detalle con acciones, estados e impedimento de intereses repetidos.
 - [x] Once baterías/sintaxis PASS, intento visual bloqueado, paquete HTTP de 82 archivos y guía de cinco minutos.
 - [ ] Revisión visual y táctil real en iPhone/escritorio, a realizar después de publicar.
-- [ ] Integración/publicación, despliegue y recursos públicos.
+- [x] Integrado y publicado en main; Pages exitoso y 81 recursos HTTPS iguales a docs/.
 
 Implementación: discovery.js contiene reglas locales sin red. Se preserva el catálogo exacto. Solo «relación estable/algo estable» y la frase explícita de dejar que pase lo que tenga que pasar se clasifican desde las descripciones existentes; las frases ambiguas no se asignan. Opciones propias exactas reconocidas. No hay artistas en el catálogo actual: no se han fabricado. Coincidencias por nombres sin acentos/mayúsculas cuando no hay dos IDs conocidos; con dos IDs se exige mismo proveedor e ID. Un punto por cada interés/artista único y por misma intención explícita; empates mantienen orden de catálogo, cero puntos conserva orden habitual.
 
@@ -19,4 +19,8 @@ Navegador: inventario sin host («The browser access host is unavailable»). Pen
 
 Commit de implementación 9faf357. Paquete regenerado: 82 archivos HTTP correctos en raíz y /buba-friends/, con igualdad de fuentes y copias. Guía, regla de afinidad y clasificación conservadora de intención documentadas en codificacion/README.md.
 
-Siguiente paso exacto: guardar documentación, actualizar origin/main, guardar recuperación pública, integrar y publicar versión 20261031-2; verificar ejecución de Pages y recursos HTTPS antes de entregar.
+Publicación funcional verificada: commit c5b0fde377418b07a18031b3869b8c86d115424e. Pages https://github.com/Izangnz/buba-friends/actions/runs/41145642336 completado con success. Los 81 recursos públicos de ejecución coinciden byte a byte con docs/ (el archivo 82 es .nojekyll). Recuperación pública anterior recuperacion-publica-antes-descubrimiento-20261031 sobre c01ed5a. Estado local conservado, sin leer/borrar datos del navegador.
+
+Enlace público: https://izangnz.github.io/buba-friends/?v=20261031-2.
+
+Siguiente paso exacto: realizar el recorrido de cinco minutos en iPhone del README: editar intereses/intención, alternar Tarjetas/Explorar, aplicar/quitar/cancelar filtros, cambiar orden, guardar un perfil, decidir y comprobarlo en Guardados tras recarga. Revisar apariencia, scroll, teclado, foco y tacto; informar de fallos para corregir y republicar. El commit posterior de registro conserva idénticos los archivos de ejecución y su despliegue se confirma antes de la entrega.

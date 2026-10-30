@@ -445,3 +445,6 @@ Persistencia en la misma clave `buba-friends-v1`: `discoveryView`, `discoveryOrd
 5. Recargar: vista, orden, filtros y guardados deben seguir. Abrir el perfil guardado, recorrer sus fotos y quitarlo de Guardados. Volver a Tarjetas y comprobar un gesto corto/vertical y un interés/pasar de ensayo; revisar una conversación e Historias.
 
 Si no quedan perfiles pendientes, Volver a ver perfiles es una acción explícita que conserva Guardados, conexiones y chats. Si los filtros no admiten ningún perfil, ajustar o quitar filtros; no se limpian automáticamente. El flujo sigue siendo una demo local, sin personas reales recibiendo estos datos.
+
+
+Publicación del bloque verificada: `c5b0fde` contiene la implementación completa y la guía; [Pages terminó con éxito](https://github.com/Izangnz/buba-friends/actions/runs/41145642336), con los 81 recursos HTTPS iguales a `docs/`. El commit posterior de registro no cambia el paquete de ejecución. La revisión real de iPhone queda para el usuario y no se presenta como realizada.
