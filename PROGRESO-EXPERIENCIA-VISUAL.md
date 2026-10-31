@@ -11,7 +11,7 @@ Base main 4aceeb6 (descubrimiento personalizado terminado y publicado). Rama mej
 - [x] Intento de acceso visual: host de navegador indisponible.
 - [x] Guía de cinco minutos, referencias, migración y limitaciones documentadas.
 - [ ] Revisión real de 375/390 px, escritorio e iPhone después de publicar.
-- [ ] Publicación y verificación de Pages/recursos.
+- [x] Integración/publicación en main, Pages exitoso y 83 recursos HTTPS idénticos a docs/.
 
 Referencias revisadas mediante fotogramas extraídos con imageio-ffmpeg instalado solo en /tmp. No se copian fotos, logos ni gráficos de Tinder; categorías con geometría SVG propia y símbolos, paleta Buba. Primer vídeo: avance arriba/abajo, opciones, hábitos/intereses y fotos. Segundo: foto protagonista, cinco destinos, temas y perfil por bloques. No se afirma haber observado la interpolación de sus movimientos.
 
@@ -27,4 +27,8 @@ Verificación adicional: volver al inicio/saltar/finalizar, orientación no visi
 
 Commit de implementación: 882dd65. Guía completa en codificacion/README.md.
 
-Siguiente paso exacto: guardar guía/registro, actualizar origin, guardar recuperación pública, integrar y publicar versión 20261031-3; confirmar Pages y los 83 recursos HTTPS de ejecución (84 con .nojekyll). La reorganización ajena de documentos se conserva pendiente sin incluirla en la publicación.
+Publicación funcional verificada: f52b88b1c09f50e69f5b041780b5ab7c57020ec3. Pages https://github.com/Izangnz/buba-friends/actions/runs/41148413439 completado con success. Los 83 recursos HTTPS coinciden byte a byte con docs/ (84 archivos locales con .nojekyll). Recuperación pública anterior recuperacion-publica-antes-experiencia-visual-20261031 sobre 4aceeb6.
+
+Enlace: https://izangnz.github.io/buba-friends/?v=20261031-3. No se ha accedido ni borrado almacenamiento del navegador. El commit posterior de registro no cambia archivos de ejecución y su despliegue se confirma antes de entregar.
+
+Siguiente paso exacto: el usuario realiza el recorrido móvil de codificacion/README.md, con ventana privada para probar un registro nuevo sin borrar su perfil habitual. Revisar disposición a 375/390 px/escritorio, selector de fotos, teclado, áreas seguras, scroll, categorías y edición de bloques. Corregir y republicar los fallos comunicados. La reorganización ajena de documentos sigue pendiente local y fuera de los commits, con sus archivos conservados.

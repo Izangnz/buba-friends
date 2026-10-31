@@ -480,3 +480,6 @@ Bloque sobre el descubrimiento personalizado ya terminado y publicado (`4aceeb6`
 5. Revisar una conversación, un borrador, Historias y Destacadas. Comprobar con teclado abierto que el avance y los campos quedan accesibles; observar legibilidad a 375/390 px, áreas seguras y scroll. No reiniciar datos para probar.
 
 Durante el trabajo aparecieron documentos de raíz trasladados a `codificacion/` con copias. Esa reorganización se conserva fuera de los commits de este bloque y no se publica ni sobrescribe por iniciativa del agente.
+
+
+Publicación de la experiencia verificada: `f52b88b`, [Pages completado con éxito](https://github.com/Izangnz/buba-friends/actions/runs/41148413439) y los 83 recursos públicos iguales byte a byte a `docs/`. Recuperación pública previa `recuperacion-publica-antes-experiencia-visual-20261031`. El registro final posterior no cambia la aplicación. La reorganización local de documentos permanece pendiente y conservada; no se incluyó en la publicación.
