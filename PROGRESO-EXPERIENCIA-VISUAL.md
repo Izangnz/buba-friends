@@ -9,7 +9,7 @@ Base main 4aceeb6 (descubrimiento personalizado terminado y publicado). Rama mej
 - [x] Panel por bloques editables, fotos, preguntas, indicador real y ajustes; destacadas conservadas.
 - [x] Doce baterías/sintaxis PASS y HTTP local de 84 archivos en raíz/subruta.
 - [x] Intento de acceso visual: host de navegador indisponible.
-- [ ] Guía y registro final de publicación.
+- [x] Guía de cinco minutos, referencias, migración y limitaciones documentadas.
 - [ ] Revisión real de 375/390 px, escritorio e iPhone después de publicar.
 - [ ] Publicación y verificación de Pages/recursos.
 
@@ -25,4 +25,6 @@ Trabajo ajeno detectado durante el bloque: documentos de raíz trasladados a cod
 
 Verificación adicional: volver al inicio/saltar/finalizar, orientación no visible por defecto, género/orientación sin inferir preferencia, contador sobre datos reales, foto actualizada conservando texto sin guardar y fixtures de visualViewport a 375/390 px (sin afirmar diseño/teclado reales). Las referencias y vídeos quedan excluidos del repositorio. Sin backend/pagos/dependencias de aplicación nuevas.
 
-Siguiente paso exacto: guardar commit de implementación, redactar guía y registro, integrar/publicar versión 20261031-3 con recuperación pública; verificar Pages y todos los recursos HTTPS. Reorganización de documentos del usuario se conserva pendiente y fuera de los commits.
+Commit de implementación: 882dd65. Guía completa en codificacion/README.md.
+
+Siguiente paso exacto: guardar guía/registro, actualizar origin, guardar recuperación pública, integrar y publicar versión 20261031-3; confirmar Pages y los 83 recursos HTTPS de ejecución (84 con .nojekyll). La reorganización ajena de documentos se conserva pendiente sin incluirla en la publicación.
