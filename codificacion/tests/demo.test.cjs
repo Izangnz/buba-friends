@@ -19,3 +19,5 @@ require('./cover-editor.test.cjs')().catch(e=>{console.error(e);process.exitCode
 require('./conversation-swipe.test.cjs')().catch(e=>{console.error(e);process.exitCode=1;});
 
 require('./discovery.test.cjs')().catch(e=>{console.error(e);process.exitCode=1;});
+
+require('./experience.test.cjs')().catch(e=>{console.error(e);process.exitCode=1;});

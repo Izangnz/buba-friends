@@ -15,3 +15,8 @@ codificacion/assets/gabriel-v1.png
 codificacion/assets/catalogo-contacto.jpg
 codificacion/assets/generation-prompts.json
 codificacion/assets/welcome-generation.json
+
+# Local video references supplied for UI review; never publish or commit.
+ScreenRecording_*.mov
+ScreenRecording_*.MP4
+copy paste /

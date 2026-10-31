@@ -1,9 +1,9 @@
 /* Pure local discovery rules. No invented catalog data, network, or compatibility percentages. */
 (function(global){
 'use strict';
-const intentions=[['stable','Relación estable'],['open','Conocer gente y ver qué surge'],['friendship','Amistad']];
+const intentions=[['stable','Relación estable'],['open','Conocer gente y ver qué surge'],['friendship','Amistad'],['casual','Citas sin compromiso'],['unsure','Aún no lo tengo claro']];
 const normalize=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLocaleLowerCase('es').replace(/\s+/g,' ');
-function intention(value){const n=normalize(value);if(n==='relacion estable'||/\brelacion estable\b|\balgo estable\b/.test(n))return 'stable';if(n==='conocer gente y ver que surge'||n.includes('dejar que pase lo que tenga que pasar'))return 'open';if(n==='amistad')return 'friendship';return '';}
+function intention(value){const n=normalize(value);if(n==='relacion estable'||/\brelacion estable\b|\balgo estable\b/.test(n))return 'stable';if(n==='conocer gente y ver que surge'||n.includes('dejar que pase lo que tenga que pasar'))return 'open';if(n==='amistad')return 'friendship';if(n==='citas sin compromiso')return 'casual';if(n==='aun no lo tengo claro')return 'unsure';return '';}
 const tags=value=>[...new Map((Array.isArray(value)?value:String(value||'').split(',')).map(t=>[normalize(t),String(t).trim()]).filter(([k])=>k)).values()];
 function artistIdentity(a){if(a?.provider&&((typeof a.providerId==='string'&&a.providerId.trim())||(Number.isSafeInteger(a.providerId)&&a.providerId>0)))return [a.provider,String(a.providerId)];const m=String(a?.url||'').match(/^https:\/\/open\.spotify\.com\/artist\/([A-Za-z0-9]{22})(?:[/?#]|$)/);return m?['spotify',m[1]]:null;}
 function sameArtist(a,b){if(!normalize(a?.name)||!normalize(b?.name))return false;const x=artistIdentity(a),y=artistIdentity(b);return x&&y?x[0]===y[0]&&x[1]===y[1]:normalize(a.name)===normalize(b.name);}

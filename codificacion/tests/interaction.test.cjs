@@ -32,7 +32,7 @@ function harness(saved, {failSave = false, reducedMotion = false} = {}) {
   function query(selector) {
     const exists=selector.startsWith('#') ? html.includes(`id="${selector.slice(1)}"`) :
       selector==='#chat-message' ? html.includes('id="send"') :
-      selector==='.messages' ? html.includes('class="messages"') : false;
+      selector==='.messages' ? html.includes('class="messages"') : /^\[data-[a-z-]+\]$/.test(selector)?html.includes(selector.slice(1,-1)):false;
     return exists ? nodes[selector] ||= element() : null;
   }
   const root={
@@ -86,8 +86,9 @@ function harness(saved, {failSave = false, reducedMotion = false} = {}) {
     getAll(k){const value=this.data[k];return Array.isArray(value)?value:value?[value]:[];}
     *[Symbol.iterator](){yield* Object.entries(this.data);}
   }
-  const context=vm.createContext({BubaDiscovery:require('../discovery.js'),document,localStorage:{getItem:k=>store[k]||null,setItem:(k,v)=>{if(failSave)throw Error('blocked');store[k]=v;}},
-    URL,window:{scrollTo(){},matchMedia:()=>({matches:reducedMotion}),addEventListener(type,fn){listen(windowEvents,type,fn);},removeEventListener(type,fn){windowEvents.get(type)?.delete(fn);}},setTimeout(){},Date:class extends Date{static now(){return clock;}},FormData});
+  const context=vm.createContext({BubaExperience:require('../experience.js'),BubaDiscovery:require('../discovery.js'),document,localStorage:{getItem:k=>store[k]||null,setItem:(k,v)=>{if(failSave)throw Error('blocked');store[k]=v;}},
+    URL,window:{scrollX:0,scrollY:0,scrollTo(x,y){this.scrollX=x;this.scrollY=y;},matchMedia:()=>({matches:reducedMotion}),addEventListener(type,fn){listen(windowEvents,type,fn);},removeEventListener(type,fn){windowEvents.get(type)?.delete(fn);}},setTimeout(){},Date:class extends Date{static now(){return clock;}},FormData});
+  vm.runInContext(fs.readFileSync(path.join(__dirname,'../experience-ui.js'),'utf8'),context);
   vm.runInContext(source,context);
   return {
     run:code=>vm.runInContext(code,context),node:s=>nodes[s]||query(s),get dialog(){return lastDialog;},store,
@@ -95,7 +96,7 @@ function harness(saved, {failSave = false, reducedMotion = false} = {}) {
     blur(){for(const fn of windowEvents.get('blur')||[])fn();},hide(){document.visibilityState='hidden';for(const fn of documentEvents.get('visibilitychange')||[])fn();document.visibilityState='visible';},
     choose(choice){const b=nodes['[data-preference]:'+choice];assert.ok(b);b.onclick();},
     start(choice='both'){this.node('#adult').onchange({target:{checked:true}});this.node('#start').onclick();this.completeProfile({name:'Demo',age:'30',bio:'',interests:''});if(!failSave)this.choose(choice);},
-    completeProfile(data){for(let i=0;i<7&&!this.run('state.profileCompleted');i++)this.submit('#profile-form',data);},
+    completeProfile(data){for(let i=0;i<9&&!this.run('state.profileCompleted');i++)this.submit('#profile-form',data);},
     submit(selector,data){const form=this.node(selector);form.data=data;for(const [k,v] of Object.entries(data))form.elements[k]={value:String(v)};form.onsubmit({preventDefault(){},target:form});},
     apply(data){const form=lastDialog.querySelector('#filters');form.data=data;form.onsubmit({preventDefault(){}});},
   };
@@ -264,9 +265,9 @@ const originalStored=old.store['buba-friends-v1'];old.run('render()');assert.equ
 const malformed=harness({started:true,me:{age:17},filters:{min:100,max:18}});assert.equal(malformed.run('state.me.age'),'');assert.equal(malformed.run('state.filters.min'),18);
 const failedSave=harness(null,{failSave:true});failedSave.start();assert.equal(failedSave.run('state.preference'),null);assert.equal(Object.keys(failedSave.store).length,0);
 
-h.run("go('profile')");
+h.run("go('profile')");h.node('#edit-profile').onclick();
 for(const data of [{name:'   ',age:'31',bio:'Texto',interests:'Café'},{name:'Demo',age:'17',bio:'Texto',interests:'Café'},
-  {name:'Demo',age:'31',bio:'x'.repeat(351),interests:'Café'},{name:'Demo',age:'31',bio:'Texto',interests:'x'.repeat(151)}]){
+  {name:'Demo',age:'31',bio:'x'.repeat(351),interests:'Café'},{name:'Demo',age:'31',bio:'Texto',interests:'x'.repeat(501)}]){
   h.submit('#profile-form',data);assert.equal(h.run('state.me.name'),'Demo');
 }
 h.node('#reset').onclick();h.dialog.querySelector('#cancel').onclick();assert.equal(h.run('state.started'),true);

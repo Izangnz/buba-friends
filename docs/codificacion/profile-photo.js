@@ -45,6 +45,7 @@ function repaint(){
  document.querySelectorAll('[data-profile-photo]').forEach(el=>{el.innerHTML=imageMarkup();el.setAttribute('aria-label',controller.url?'Tu foto de perfil':'Avatar neutro sin foto');});
  document.querySelectorAll('[data-photo-controls]').forEach(el=>{el.innerHTML=controlMarkup();el.querySelector('[data-photo-error]').textContent=failure||(!controller.ready?'Preparando foto…':'');});
  bind(document,false);
+ if(typeof global.CustomEvent==='function')document.dispatchEvent?.(new global.CustomEvent('buba-photo-updated'));
 }
 async function load(){if(loading)return loading;loading=(async()=>{try{await controller.load();failure='';}catch{failure='No se puede acceder a la foto guardada. Revisa el espacio y los permisos del navegador. Tu foto anterior no se ha borrado.';}finally{loading=null;repaint();}})();return loading;}
 async function remove(){await controller.remove();failure='';repaint();}
